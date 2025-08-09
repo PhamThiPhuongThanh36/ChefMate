@@ -9,3 +9,9 @@ data class Ingredient(
     val weight: Double,
     val unit: String
 )
+
+data class  IngredientInput(
+    val ingredientName: String,
+    val weight: String,
+    val unit: String
+)

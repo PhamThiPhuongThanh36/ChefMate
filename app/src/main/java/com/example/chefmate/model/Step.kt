@@ -5,3 +5,8 @@ data class Step(
     val recipeId: Int,
     val description: String
 )
+
+data class StepInput(
+    val index: Int,
+    val description: String
+)
