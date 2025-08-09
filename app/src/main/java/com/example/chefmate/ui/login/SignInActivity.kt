@@ -22,6 +22,7 @@ import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.chefmate.R
+import com.example.chefmate.common.*
 
 @Composable
 fun SignInActivity() {
