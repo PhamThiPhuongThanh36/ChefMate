@@ -26,11 +26,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.chefmate.R
 import com.example.chefmate.model.Recipe
-import com.example.chefmate.ui.homescreen.BigCard
-import com.example.chefmate.ui.homescreen.Header
-import com.example.chefmate.ui.homescreen.Label
-import com.example.chefmate.ui.homescreen.SearchBar
-import com.example.chefmate.ui.homescreen.SmallCard
+import com.example.chefmate.common.*
 
 @Composable
 fun HomeScreen() {
