@@ -1,15 +1,14 @@
 package com.example.chefmate.ui.recipe
 
+import android.annotation.SuppressLint
 import android.view.View
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -24,13 +23,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
@@ -53,10 +49,9 @@ import com.example.chefmate.R
 import com.example.chefmate.model.Ingredient
 import com.example.chefmate.model.Recipe
 import com.example.chefmate.model.Step
-import com.example.chefmate.ui.homescreen.Header
-import com.example.chefmate.ui.homescreen.Label
-import org.burnoutcrew.reorderable.rememberReorderableLazyListState
+import com.example.chefmate.common.*
 
+@SuppressLint("UseOfNonLambdaOffsetOverload")
 @Composable
 fun RecipeScreen(recipe: Recipe) {
     val lazyListState1 = rememberLazyListState()
@@ -386,17 +381,5 @@ fun RecipeScreenPreview() {
         "https://helios-i.mashable.com/imagery/articles/040MMJLdogUu9t7WB5h2Vbv/hero-image.fill.size_1248x702.v1740075757.jpg",
         false
     )
-    val ingredient1 = Ingredient(1, 1, "Hành lá", 10.0, "lá")
-    val ingredient2 = Ingredient(1, 1, "Hành lá", 10.0, "lá")
-    val ingredient3 = Ingredient(1, 1, "Hành lá", 10.0, "lá")
-    val ingredient4 = Ingredient(1, 1, "Hành lá", 10.0, "lá")
     RecipeScreen(recipe)
-
-//    Column(
-//        modifier = Modifier
-//            .fillMaxSize()
-//            .background(Color(0xFFFFFFFF))
-//    ) {
-//        IngredientItem(ingredient4)
-//    }
 }
