@@ -42,6 +42,8 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.chefmate.R
+import com.example.chefmate.ui.account.AccountScreen
+import com.example.chefmate.ui.recipe.RecipeListScreen
 import kotlinx.coroutines.launch
 
 @Composable
@@ -67,7 +69,7 @@ fun MainAct(navController: NavController) {
         ) { _ ->
             HorizontalPager(
                 state = paperState,
-                userScrollEnabled = true
+                userScrollEnabled = false
             ) { page ->
                 Box(
                     modifier = Modifier
@@ -75,22 +77,13 @@ fun MainAct(navController: NavController) {
                 ) {
                     when (page) {
                         0 -> {
-                            Column(
-                                Modifier.background(Color.Red).fillMaxSize()
-                            ) {
-                            }
+                            HomeScreen()
                         }
                         1 -> {
-                            Column(
-                                Modifier.background(Color.Cyan).fillMaxSize()
-                            ) {
-                            }
+                            RecipeListScreen()
                         }
                         2 -> {
-                            Column(
-                                Modifier.background(Color.Gray).fillMaxSize()
-                            ) {
-                            }
+                            AccountScreen()
                         }
                     }
                 }
@@ -187,7 +180,7 @@ fun BottomNavigationBar(
         }
         ConstraintLayout(
             modifier = Modifier
-                .size(animeOptionsBackgroud.dp * 270, animeOptionsBackgroud.dp * 300)
+                .size(animeOptionsBackgroud.dp * 330, animeOptionsBackgroud.dp * 360)
                 .background(color = Color(0xFFFB923C), shape = CircleShape)
                 .rotate(45f)
                 .constrainAs(optionBackgroundRef) {
@@ -198,7 +191,7 @@ fun BottomNavigationBar(
             Box(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier
-                    .size((animeOptionsBackgroud * 300).dp, (animeOptionsBackgroud * 320).dp)
+                    .size((animeOptionsBackgroud * 320).dp, (animeOptionsBackgroud * 350).dp)
                     .background(color = Color(0xA0000000), shape = CircleShape)
                     .rotate(135f)
                     .constrainAs(createRef()) {
@@ -214,7 +207,10 @@ fun BottomNavigationBar(
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
-                            .padding(bottom = 10.dp)
+                            .padding(bottom = 20.dp)
+                            .clickable {
+                                navController.navigate("addRecipe")
+                            }
                     ) {
                         Text(
                             text = "Thêm công thức",
@@ -232,14 +228,16 @@ fun BottomNavigationBar(
                             Icon(
                                 painter = painterResource(R.drawable.ic_add_recipe),
                                 contentDescription = "Add recipe",
-                                tint = Color(0xFF5496FF),
+                                tint = Color.Unspecified,
                                 modifier = Modifier
-                                    .size(50.dp)
+                                    .size(38.dp)
                             )
                         }
                     }
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .padding(bottom = 20.dp)
                     ) {
                         Text(
                             text = "Lập danh sách mua sắm",
@@ -257,9 +255,9 @@ fun BottomNavigationBar(
                             Icon(
                                 painter = painterResource(R.drawable.ic_cart),
                                 contentDescription = "Add recipe",
-                                tint = Color(0xFF79A9F6),
+                                tint = Color.Unspecified,
                                 modifier = Modifier
-                                    .size(50.dp)
+                                    .size(38.dp)
                             )
                         }
                     }
