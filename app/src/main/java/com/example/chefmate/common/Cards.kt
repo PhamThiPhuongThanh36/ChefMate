@@ -75,17 +75,18 @@ fun BigCard(recipe: Recipe) {
         ),
         modifier = Modifier
             .padding(10.dp)
-            .fillMaxWidth(0.8f)
+            .fillMaxWidth(0.9f)
             .height(280.dp)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
+                .padding(bottom = 10.dp)
         ) {
             Image(
                 painter = rememberAsyncImagePainter(model = recipe.image),
                 contentDescription = null,
-                contentScale = ContentScale.FillBounds,
+                contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(180.dp)
@@ -95,7 +96,7 @@ fun BigCard(recipe: Recipe) {
                 fontWeight = FontWeight.Bold,
                 fontSize = 16.sp,
                 modifier = Modifier
-                    .padding(start = 20.dp, top = 15.dp)
+                    .padding(start = 20.dp, top = 5.dp)
             )
             Text(
                 text = recipe.userName,
@@ -103,14 +104,13 @@ fun BigCard(recipe: Recipe) {
                 color = Color(0xFFF97316),
                 fontWeight = FontWeight(600),
                 modifier = Modifier
-                    .padding(start = 20.dp, top = 8.dp)
+                    .padding(start = 20.dp, top = 5.dp)
                     .background(Color(0xFFFFEDD5))
-                    .padding(4.dp)
             )
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
-                    .padding(start = 20.dp, top = 8.dp)
+                    .padding(start = 20.dp, top = 5.dp)
             ) {
                 Icon(
                     painter = painterResource(R.drawable.ic_heart),

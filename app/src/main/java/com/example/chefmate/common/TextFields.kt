@@ -6,9 +6,11 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
@@ -165,6 +167,38 @@ fun Label(text: String, modifier: Modifier = Modifier) {
     )
 }
 
+@Composable
+fun ItemSetting(icon: Int, content: String, modifier: Modifier = Modifier) {
+    Column(
+        modifier = modifier
+            .padding(top = 10.dp, start = 20.dp, end = 20.dp)
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(
+                painter = painterResource(id = icon),
+                contentDescription = null,
+                tint = Color(0xFF000000),
+                modifier = Modifier
+                    .size(18.dp)
+            )
+            Text(
+                text = content,
+                color = Color(0xFF000000),
+                modifier = Modifier
+                    .padding(start = 10.dp)
+            )
+            Spacer(modifier = Modifier.weight(1f))
+            Icon(
+                painter = painterResource(R.drawable.ic_next),
+                contentDescription = null
+            )
+        }
+        HorizontalDivider(modifier = Modifier.fillMaxWidth().padding(top = 10.dp), color = Color(0xFFE1E1E3))
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TimeDropdown(
@@ -296,6 +330,7 @@ fun AddIndredientEditText(
         }
     }
 }
+
 @Preview
 @Composable
 fun TextFieldPreview() {
@@ -304,6 +339,9 @@ fun TextFieldPreview() {
             .fillMaxSize()
             .background(Color(0xFFFFFFFF))
     ) {
-        AddIndredientEditText("", {}, "", {}, "", {})
+        ItemSetting(
+            icon = R.drawable.ic_email,
+            content = "Đăng xuất"
+        )
     }
 }

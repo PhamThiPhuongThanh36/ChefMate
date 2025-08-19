@@ -24,10 +24,11 @@ fun Header(
     title: String? = null,
     saveIcon: @Composable (() -> Unit)? = null, onClickSave: (() -> Unit)? = null,
     trailingIcon: @Composable (() -> Unit)? = null, onClickTrailingIcon: (() -> Unit)? = null,
+    modifier: Modifier = Modifier
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .background(
                 brush = Brush.linearGradient(
