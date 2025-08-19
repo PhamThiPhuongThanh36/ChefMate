@@ -60,6 +60,7 @@ fun SearchBar(
         TextField(
             value = content,
             onValueChange = onValueChange,
+            singleLine = true,
             placeholder = {
                 Text(
                     text = placeholder,
@@ -106,6 +107,7 @@ fun CustomEditText(
     TextField(
         value = content,
         onValueChange = onValueChange,
+        singleLine = true,
         placeholder = {
             Text(
                 text = placeholder,
@@ -138,6 +140,7 @@ fun EditTextWithouthLabel(
     OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
+        singleLine = true,
         colors = TextFieldDefaults.colors(
             focusedContainerColor = Color(0xFFFFFFFF),
             unfocusedContainerColor = Color(0xFFFFFFFF),
@@ -273,6 +276,7 @@ fun AddIndredientEditText(
             TextField(
                 value = name,
                 onValueChange = onNameChange,
+                singleLine = true,
                 label = {
                     Text(text = "Tên nguyên liệu")
                 },
@@ -300,6 +304,7 @@ fun AddIndredientEditText(
                     label = {
                         Text(text = "Khối lượng")
                     },
+                    singleLine = true,
                     colors = TextFieldDefaults.colors(
                         focusedContainerColor = Color(0xFFFFFFFF),
                         unfocusedContainerColor = Color(0xFFFFFFFF),
@@ -312,6 +317,7 @@ fun AddIndredientEditText(
                 TextField(
                     value = unit,
                     onValueChange = onUnitChange,
+                    singleLine = true,
                     colors = TextFieldDefaults.colors(
                         focusedContainerColor = Color(0xFFFFFFFF),
                         unfocusedContainerColor = Color(0xFFFFFFFF),
