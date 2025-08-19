@@ -4,15 +4,19 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -27,16 +31,21 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.chefmate.R
+import com.example.chefmate.common.ItemSetting
 
 @Composable
 fun AccountScreen() {
     Column(
         modifier = Modifier
+            .statusBarsPadding()
             .fillMaxSize()
             .background(
                 brush =  Brush.verticalGradient(
@@ -188,16 +197,103 @@ fun AccountScreen() {
                     .align(Alignment.CenterHorizontally)
                     .padding(bottom = 5.dp)
             ) {
-                Row {
-                    Card(
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(start = 10.dp)
+                ) {
+                    Box(
+                        contentAlignment = Alignment.Center,
                         modifier = Modifier
+                            .padding(end = 20.dp)
                             .size(40.dp)
+                            .background(Color(0xFFD7EDED), shape = CircleShape)
+                            .border(1.dp, shape = CircleShape, color = Color(0xFFFFFFFF))
                     ) {
                         Icon(
-                            painter = painterResource(R.drawable.ic_eye_close),
+                            painter = painterResource(R.drawable.ic_recipe_book),
                             contentDescription = null,
+                            tint = Color.Unspecified,
                             modifier = Modifier
-                                .size(19.dp)
+                                .size(22.dp)
+                        )
+                    }
+                    Column {
+                        Text(
+                            buildAnnotatedString {
+                                withStyle(style = SpanStyle(fontSize = 12.sp)) {
+                                    append("Bạn đã đăng ")
+                                }
+                                withStyle(style = SpanStyle(fontSize = 12.sp, fontWeight = FontWeight.Bold)) {
+                                    append("2 công thức")
+                                }
+                            }
+                        )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Text(
+                                text = "Xem công thức đã đăng",
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFF2E8D8C),
+                                fontSize = 12.sp
+                            )
+                            Icon(
+                                painter = painterResource(R.drawable.ic_next),
+                                tint = Color(0xFF2E8D8C),
+                                contentDescription = null
+                            )
+                        }
+                    }
+                }
+            }
+        }
+        Card(
+            colors = CardDefaults.cardColors(
+                containerColor = Color(0xFFF8F8FC)
+            ),
+            modifier = Modifier
+                .padding(top = 40.dp)
+                .fillMaxSize()
+                .border(1.dp, Color(0xFF85D0B6), shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
+        ) {
+            Column(
+                modifier = Modifier
+                    .padding(20.dp)
+                    .fillMaxWidth()
+            ) {
+                com.example.chefmate.common.Label("Cài đặt", modifier = Modifier.padding(start = 20.dp, bottom = 10.dp))
+                Card(
+                    colors = CardDefaults.cardColors(
+                        containerColor = Color(0xFFFFFFFF)
+                    ),
+                    modifier = Modifier
+                        .fillMaxWidth(0.9f)
+                        .border(1.dp, Color(0xFFE1E1E3), shape = RoundedCornerShape(10.dp))
+                        .align(Alignment.CenterHorizontally)
+                ) {
+                    Column {
+                        ItemSetting(
+                            icon = R.drawable.ic_cart_setting,
+                            content = "Lịch sử mua sắm",
+                        )
+                        ItemSetting(
+                            icon = R.drawable.ic_security,
+                            content = "Chính sách bảo mật",
+
+                        )
+                        ItemSetting(
+                            icon = R.drawable.ic_clause,
+                            content = "Điều khoản sử dụng"
+                        )
+                        ItemSetting(
+                            icon = R.drawable.ic_question,
+                            content = "Hỗ trợ và báo cáo"
+                        )
+                        ItemSetting(
+                            icon = R.drawable.ic_star,
+                            content = "Đánh giá"
                         )
                     }
                 }
