@@ -1,5 +1,6 @@
 package com.example.chefmate.common
 
+import android.net.Uri
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -25,6 +26,7 @@ import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
 import com.example.chefmate.R
 import com.example.chefmate.model.Recipe
+import java.io.File
 
 @Composable
 fun SmallCard(content: String, img: Int) {
@@ -84,7 +86,12 @@ fun BigCard(recipe: Recipe) {
                 .padding(bottom = 10.dp)
         ) {
             Image(
-                painter = rememberAsyncImagePainter(model = recipe.image),
+                painter = rememberAsyncImagePainter(
+                    if (recipe.image.startsWith("/")) {
+                        Uri.fromFile(File(recipe.image))
+                    } else {
+                    recipe.image // Đây có thể là URL ảnh từ internet
+                }),
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
