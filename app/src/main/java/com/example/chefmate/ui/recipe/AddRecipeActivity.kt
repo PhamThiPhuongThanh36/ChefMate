@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -30,15 +31,20 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.chefmate.R
 import com.example.chefmate.common.AddIndredientEditText
@@ -47,12 +53,19 @@ import com.example.chefmate.common.EditTextWithouthLabel
 import com.example.chefmate.common.Header
 import com.example.chefmate.common.Label
 import com.example.chefmate.common.TimeDropdown
+import com.example.chefmate.database.AppDatabase
+import com.example.chefmate.database.entity.RecipeEntity
 import com.example.chefmate.model.IngredientInput
+import com.example.chefmate.model.Recipe
 import com.example.chefmate.model.StepInput
+import com.example.chefmate.repository.RecipeRepository
+import com.example.chefmate.viewmodel.RecipeViewModel
+import com.example.chefmate.viewmodel.RecipeViewModelFactory
+import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddRecipeScreen() {
+fun AddRecipeScreen(navController: NavController) {
+    var coroutineScope = rememberCoroutineScope()
     var recipeName by remember { mutableStateOf("") }
     var tags by remember { mutableStateOf("") }
     var cookingTime by remember { mutableStateOf("") }
@@ -71,9 +84,22 @@ fun AddRecipeScreen() {
         imageUri = uri
     }
 
+    val context = LocalContext.current
+    val db = remember { AppDatabase.getDatabase(context) }
+    val recipeDao = remember { db.recipeDao() }
+    val ingredientDao = remember { db.ingredientDao() }
+    val stepDao = remember { db.stepDao() }
+    // Khởi tạo Repository
+    val recipeRepository = remember { RecipeRepository(recipeDao, ingredientDao, stepDao) }
+    // Khởi tạo ViewModel với Repository
+    val recipeViewModel: RecipeViewModel = viewModel(
+        factory = RecipeViewModelFactory(recipeRepository)
+    )
+
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
+            .statusBarsPadding()
             .fillMaxSize()
             .background(Color(0xFFFFFFFF))
     ) {
@@ -86,7 +112,7 @@ fun AddRecipeScreen() {
                 )
             },
             onClickLeadingIcon = {
-                // Handle back button click
+                navController.popBackStack()
             },
             title = "Thêm công thức"
         )
@@ -97,7 +123,7 @@ fun AddRecipeScreen() {
                 .verticalScroll(rememberScrollState())
                 .padding(bottom = 30.dp)
         ) {
-            Image(
+                  Image(
                 painter = if (imageUri == null) painterResource(R.drawable.ic_picture_placeholder) else rememberAsyncImagePainter(imageUri),
                 contentDescription = null,
                 contentScale = if (imageUri == null) ContentScale.Fit else ContentScale.Crop,
@@ -276,7 +302,19 @@ fun AddRecipeScreen() {
             CustomButton(
                 text = "Đăng công thức",
                 onClick = {
-
+                    coroutineScope.launch {
+                        val newRecipe = RecipeEntity(
+                            userId = 1,
+                            recipeName = recipeName,
+                            image = imageUri.toString(),
+                            cookingTime = cookingTime,
+                            ration = ration.toInt(),
+                            viewCount = 0,
+                            likeQuantity = 0,
+                            createdAt = ""
+                        )
+                        recipeViewModel.insertRecipe(newRecipe)
+                    }
                 },
                 modifier = Modifier
             )
@@ -287,5 +325,5 @@ fun AddRecipeScreen() {
 @Preview
 @Composable
 fun AddRecipeScreenPreview() {
-    AddRecipeScreen()
+    AddRecipeScreen(rememberNavController())
 }
