@@ -7,8 +7,9 @@ import com.example.chefmate.database.entity.IngredientEntity
 import com.example.chefmate.database.entity.RecipeEntity
 import com.example.chefmate.database.entity.StepEntity
 import kotlinx.coroutines.flow.Flow
+import javax.inject.Inject
 
-class RecipeRepository(
+class RecipeRepository @Inject constructor(
     private val recipeDao: RecipeDao,
     private val ingredientDao: IngredientDao,
     private val stepDao: StepDao
@@ -21,7 +22,7 @@ class RecipeRepository(
         return recipeDao.insertRecipe(recipe)
     }
 
-    suspend fun getAllIngredientsByRecipeId(recipeId: Int): List<IngredientEntity> {
+    fun getAllIngredientsByRecipeId(recipeId: Int): Flow<List<IngredientEntity>> {
         return ingredientDao.getIngredientsByRecipeId(recipeId)
     }
 
@@ -29,7 +30,11 @@ class RecipeRepository(
         ingredientDao.insertIngredients(ingredients)
     }
 
-    suspend fun getAllStepsByRecipeId(recipeId: Int): List<StepEntity> {
+    fun getRecipeById(recipeId: Int): Flow<RecipeEntity?> {
+        return recipeDao.getRecipeById(recipeId)
+    }
+
+    fun getAllStepsByRecipeId(recipeId: Int): Flow<List<StepEntity>> {
         return stepDao.getStepsByRecipeId(recipeId)
     }
 
