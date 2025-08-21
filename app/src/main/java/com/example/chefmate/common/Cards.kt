@@ -3,6 +3,7 @@ package com.example.chefmate.common
 import android.net.Uri
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -67,7 +68,7 @@ fun SmallCard(content: String, img: Int) {
 }
 
 @Composable
-fun BigCard(recipe: Recipe) {
+fun BigCard(recipe: Recipe, onClick: () -> Unit) {
     Card(
         colors = CardDefaults.cardColors(
             containerColor = Color(0xFFFFFFFF)
@@ -79,6 +80,7 @@ fun BigCard(recipe: Recipe) {
             .padding(10.dp)
             .fillMaxWidth(0.9f)
             .height(280.dp)
+            .clickable { onClick() }
     ) {
         Column(
             modifier = Modifier
