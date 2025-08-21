@@ -136,7 +136,7 @@ fun HomeScreen() {
                 .background(Color(0xFFFFFFFF))
         ) {
             items(listRecipes.size) { index ->
-                BigCard(listRecipes[index])
+                BigCard(listRecipes[index]) {}
             }
         }
     }

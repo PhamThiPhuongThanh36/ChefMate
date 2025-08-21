@@ -80,7 +80,7 @@ fun MainAct(navController: NavController) {
                             HomeScreen()
                         }
                         1 -> {
-                            RecipeListScreen()
+                            RecipeListScreen(navController)
                         }
                         2 -> {
                             AccountScreen()
