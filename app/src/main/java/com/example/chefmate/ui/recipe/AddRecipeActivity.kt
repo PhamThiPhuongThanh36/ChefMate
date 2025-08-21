@@ -6,7 +6,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.content.contentReceiver
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -17,15 +16,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
@@ -42,7 +37,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import coil.compose.rememberAsyncImagePainter
@@ -53,19 +48,20 @@ import com.example.chefmate.common.EditTextWithouthLabel
 import com.example.chefmate.common.Header
 import com.example.chefmate.common.Label
 import com.example.chefmate.common.TimeDropdown
-import com.example.chefmate.database.AppDatabase
+import com.example.chefmate.common.saveImageToInternalStorage
+import com.example.chefmate.database.entity.IngredientEntity
 import com.example.chefmate.database.entity.RecipeEntity
 import com.example.chefmate.model.IngredientInput
-import com.example.chefmate.model.Recipe
 import com.example.chefmate.model.StepInput
-import com.example.chefmate.repository.RecipeRepository
 import com.example.chefmate.viewmodel.RecipeViewModel
-import com.example.chefmate.viewmodel.RecipeViewModelFactory
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+
 
 @Composable
-fun AddRecipeScreen(navController: NavController) {
-    var coroutineScope = rememberCoroutineScope()
+fun AddRecipeScreen(navController: NavController, recipeViewModel: RecipeViewModel = hiltViewModel()) {
+    val coroutineScope = rememberCoroutineScope()
     var recipeName by remember { mutableStateOf("") }
     var tags by remember { mutableStateOf("") }
     var cookingTime by remember { mutableStateOf("") }
@@ -75,7 +71,7 @@ fun AddRecipeScreen(navController: NavController) {
         mutableStateListOf(IngredientInput("", "", ""))
     }
     val steps = remember {
-        mutableStateListOf<StepInput>(StepInput(1, ""))
+        mutableStateListOf(StepInput( 1, ""))
     }
     var imageUri by remember { mutableStateOf<Uri?>(null) }
     val launcher = rememberLauncherForActivityResult(
@@ -85,16 +81,6 @@ fun AddRecipeScreen(navController: NavController) {
     }
 
     val context = LocalContext.current
-    val db = remember { AppDatabase.getDatabase(context) }
-    val recipeDao = remember { db.recipeDao() }
-    val ingredientDao = remember { db.ingredientDao() }
-    val stepDao = remember { db.stepDao() }
-    // Khởi tạo Repository
-    val recipeRepository = remember { RecipeRepository(recipeDao, ingredientDao, stepDao) }
-    // Khởi tạo ViewModel với Repository
-    val recipeViewModel: RecipeViewModel = viewModel(
-        factory = RecipeViewModelFactory(recipeRepository)
-    )
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -153,19 +139,10 @@ fun AddRecipeScreen(navController: NavController) {
                     .fillMaxWidth(0.85f)
                     .padding(top = 10.dp),
             ) {
-                OutlinedTextField(
+                EditTextWithouthLabel(
                     value = cookingTime,
                     onValueChange = { cookingTime = it },
-                    colors = TextFieldDefaults.colors(
-                        focusedContainerColor = Color(0xFFFFFFFF),
-                        unfocusedContainerColor = Color(0xFFFFFFFF),
-                        focusedIndicatorColor = Color(0xFFA3A3A3),
-                        unfocusedIndicatorColor = Color(0xFFA3A3A3),
-                    ),
-                    label = {
-                        Text("Thời gian nấu")
-                    },
-                    shape = RoundedCornerShape(10.dp),
+                    label = "Thời gian nấu",
                     modifier = Modifier
                         .weight(1f)
                 )
@@ -193,7 +170,7 @@ fun AddRecipeScreen(navController: NavController) {
             }
 
             val options = listOf("Riêng tư", "Công khai")
-            var (selectedOption, onOptionSelected) = remember { mutableStateOf(options[0]) }
+            val (selectedOption, onOptionSelected) = remember { mutableStateOf(options[0]) }
             Row(
                 modifier = Modifier
                     .fillMaxWidth(0.85f)
@@ -235,9 +212,9 @@ fun AddRecipeScreen(navController: NavController) {
                         name = item.ingredientName,
                         onNameChange = { ingredients[index] = item.copy(ingredientName = it) },
                         quantity = item.weight,
-                        onQuantityChange = { ingredients[index] = item.copy(ingredientName = it) },
+                        onQuantityChange = { ingredients[index] = item.copy(weight = it) },
                         unit = item.unit,
-                        onUnitChange = { ingredients[index] = item.copy(ingredientName = it) }
+                        onUnitChange = { ingredients[index] = item.copy(unit = it) }
                     )
                 }
                 Row(
@@ -302,18 +279,45 @@ fun AddRecipeScreen(navController: NavController) {
             CustomButton(
                 text = "Đăng công thức",
                 onClick = {
-                    coroutineScope.launch {
+                    val currentDateTime = java.time.LocalDateTime.now().toString()
+                    val savedImagePath = imageUri?.let { uri ->
+                        saveImageToInternalStorage(context, uri)
+                    }
+                    coroutineScope.launch(Dispatchers.IO) {
                         val newRecipe = RecipeEntity(
                             userId = 1,
                             recipeName = recipeName,
-                            image = imageUri.toString(),
+                            image = savedImagePath.toString(),
                             cookingTime = cookingTime,
                             ration = ration.toInt(),
                             viewCount = 0,
                             likeQuantity = 0,
-                            createdAt = ""
+                            createdAt = currentDateTime
                         )
-                        recipeViewModel.insertRecipe(newRecipe)
+                        val newRecipeId = recipeViewModel.insertRecipe(newRecipe)
+                        if (newRecipeId != -1L) {
+                            val ingredientEntities = ingredients.map { ingredientInput ->
+                                IngredientEntity(
+                                    recipeId = newRecipeId.toInt(),
+                                    ingredientName = ingredientInput.ingredientName,
+                                    weight = ingredientInput.weight.toDouble(),
+                                    unit = ingredientInput.unit
+                                )
+                            }.filter { it.ingredientName.isNotBlank() }
+                            recipeViewModel.insertIngredients(ingredientEntities)
+
+                            val stepEntities = steps.map { stepInput ->
+                                com.example.chefmate.database.entity.StepEntity(
+                                    recipeId = newRecipeId.toInt(),
+                                    description = stepInput.description
+                                )
+                            }.filter { it.description.isNotBlank() }
+                            recipeViewModel.insertSteps(stepEntities)
+
+                            withContext(Dispatchers.Main) {
+                                navController.popBackStack()
+                            }
+                        }
                     }
                 },
                 modifier = Modifier
