@@ -6,6 +6,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import com.example.chefmate.database.entity.RecipeEntity
+import com.example.chefmate.model.Recipe
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -18,4 +19,11 @@ interface RecipeDao {
 
     @Update(onConflict = OnConflictStrategy.REPLACE)
     suspend fun updateRecipe(recipe: RecipeEntity)
+
+    @Query("DELETE FROM Recipes WHERE recipeId = :recipeId")
+    suspend fun deleteRecipeById(recipeId: Int)
+
+    @Query("SELECT * FROM Recipes WHERE recipeId = :recipeId")
+    fun getRecipeById(recipeId: Int): Flow<RecipeEntity?>
+
 }

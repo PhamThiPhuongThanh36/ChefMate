@@ -2,6 +2,7 @@ package com.example.chefmate.database.entity
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.example.chefmate.model.IngredientInput
 
 @Entity(tableName = "Ingredients")
 data class IngredientEntity(
@@ -12,4 +13,12 @@ data class IngredientEntity(
     val weight: Double,
     val unit: String
 )
+
+fun IngredientEntity.toIngredient(): IngredientInput {
+    return IngredientInput(
+        ingredientName = this.ingredientName,
+        weight = this.weight.toString(),
+        unit = this.unit
+    )
+}
 
