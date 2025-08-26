@@ -10,8 +10,10 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -22,6 +24,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
@@ -66,6 +69,7 @@ fun SmallCard(content: String, img: Int) {
         }
     }
 }
+
 
 @Composable
 fun BigCard(recipe: Recipe, onClick: () -> Unit) {
@@ -157,4 +161,23 @@ fun BigCard(recipe: Recipe, onClick: () -> Unit) {
             }
         }
     }
+}
+
+@Preview
+@Composable
+fun CardPreview() {
+    val recipe =  Recipe(
+        recipeId = 1,
+        userId = 1,
+        recipeName = "Cơm sườn",
+        image = "https://wibu.com.vn/wp-content/uploads/2025/07/Akaza-thanh-guom-diet-quy-rotated.jpg",
+        cookingTime = "",
+        ration = 2,
+        viewCount = 1,
+        likeQuantity = 1,
+        createdAt = "",
+        userName = "Ptpt2004",
+        userImage = "",
+        isLiked = true
+    )
 }
