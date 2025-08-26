@@ -8,4 +8,5 @@ data class ShoppingEntity(
     @PrimaryKey(autoGenerate = true)
     val shoppingId: Int? = null,
     val status: Boolean,
+    val createdAt: Long,
 )
