@@ -2,29 +2,35 @@ package com.example.chefmate.ui.recipe
 
 import android.annotation.SuppressLint
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardColors
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -32,20 +38,22 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import coil.compose.rememberAsyncImagePainter
@@ -57,26 +65,38 @@ import com.example.chefmate.model.StepInput
 import com.example.chefmate.viewmodel.RecipeViewModel
 import kotlinx.coroutines.flow.map
 import androidx.hilt.navigation.compose.hiltViewModel
+import kotlinx.coroutines.launch
 
 @SuppressLint("UseOfNonLambdaOffsetOverload", "CoroutineCreationDuringComposition")
 @Composable
-fun RecipeScreen(navController: NavController,recipeViewModel: RecipeViewModel = hiltViewModel(), recipeId: Int) {
-    val lazyListState1 = rememberLazyListState()
-    val lazyListState2 = rememberLazyListState()
-    val isShowStep by remember { derivedStateOf { lazyListState1.firstVisibleItemScrollOffset == 0 } }
-    val isShowIngredient by remember { derivedStateOf { lazyListState2.firstVisibleItemScrollOffset == 0 } }
-    val offsetX by animateFloatAsState(
-        targetValue = if (isShowStep) 0f else -150f,
-        animationSpec = tween(durationMillis = 500),
-        label = "offsetX"
-    )
-
+fun RecipeScreen(
+    navController: NavController,
+    recipeViewModel: RecipeViewModel = hiltViewModel(),
+    recipeId: Int,
+) {
     val coroutineScope = rememberCoroutineScope()
+    val lazyListState1 = rememberLazyListState()
+    var selectedPageManual by remember { mutableIntStateOf(-1) }
+    val selectedPage by remember {
+        derivedStateOf {
+            if (selectedPageManual != -1) {
+                selectedPageManual
+            } else {
+                if (lazyListState1.firstVisibleItemIndex == 0) 0
+                else lazyListState1.firstVisibleItemIndex - 1
+            }
+        }
+    }
+    val isShowStep by remember { derivedStateOf { lazyListState1.firstVisibleItemIndex == 0 } }
 
-
-    val currentRecipeId = recipeId ?: 0
-
-    val context = LocalContext.current
+    val animateFooter by animateFloatAsState(
+        targetValue = if (selectedPage == 0) 0.25f else 0.75f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioLowBouncy,
+            stiffness = Spring.StiffnessLow
+        ),
+        label = "Footer Offset"
+    )
 
     val recipe by recipeViewModel.getRecipeById(recipeId)
         .collectAsState(initial = null)
@@ -85,41 +105,29 @@ fun RecipeScreen(navController: NavController,recipeViewModel: RecipeViewModel =
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFFFFFFFF))
-            .statusBarsPadding()
     ) {
-        val ingredients by remember(currentRecipeId) { // Dùng remember với key để Flow chỉ được tạo lại khi ID thay đổi
-            recipeViewModel.getIngredientsByRecipeId(currentRecipeId)
+        val ingredients by remember(recipeId) {
+            recipeViewModel.getIngredientsByRecipeId(recipeId)
                 .map { ingredientEntities ->
                     ingredientEntities.map { entity ->
-                        IngredientInput(entity.ingredientName, entity.weight.toString(), entity.unit)
+                        IngredientInput(
+                            entity.ingredientName,
+                            entity.weight.toString(),
+                            entity.unit
+                        )
                     }
                 }
         }.collectAsState(initial = emptyList())
 
-        val steps by remember(currentRecipeId) {
-            recipeViewModel.getStepsByRecipeId(currentRecipeId)
+        val steps by remember(recipeId) {
+            recipeViewModel.getStepsByRecipeId(recipeId)
                 .map { stepEntities ->
                     stepEntities.map { entity ->
                         StepInput(1, entity.description)
                     }
                 }
         }.collectAsState(initial = emptyList())
-//
-//        val ingredients = remember {
-//            mutableStateListOf(
-//                IngredientInput( "Hành lá", "10", "lá"),
-//                IngredientInput("Ớt", "5", "trái"),
-//                IngredientInput( "Nước mắm", "30", "ml"),
-//                IngredientInput( "Tỏi", "3", "tép")
-//            )
-//        }
-//
-//        val step1 = StepEntity(1,1,"Đập trứng cho vào tô cùng với 1 muỗng cà phê nước mắm, 1 muỗng cà phê hạt nêm và đánh trứng cho tan ra hết.")
-//        val step2 = StepEntity(1,1,"Cà chua mua về rửa sạch, cắt múi cau. Hành tím lột vỏ, rửa sạch rồi cắt lát. Hành lá rửa sạch cắt nhỏ.")
-//        val step3 = StepEntity(1,1,"Bắc nồi lên bếp, cho vào nồi 1/2 muỗng canh dầu ăn và phi thơm hành tím. Kế đến, cho cà chua vào xào khoảng 2 phút cho cà chua chín.")
-//        val step4 = StepEntity(1,1,"Canh sôi lại 1 lần nữa thì nêm nếm lại cho vừa ăn, múc ra tô, rắc hành lá và tiêu xay là hoàn thành.")
-//        val step5 = StepEntity(1,1,"Canh cà chua trứng có màu sắc bắt mắt, hương thơm từ hành lá và tiêu xay rất hấp dẫn.")
-//        val steps = listOf(step1, step2, step3, step4, step5)
+
         Header(
             leadingIcon = {
                 Icon(
@@ -154,206 +162,220 @@ fun RecipeScreen(navController: NavController,recipeViewModel: RecipeViewModel =
 
         )
         AnimatedVisibility(
-            visible =  isShowStep,
+            visible = isShowStep
         ) {
-            Card(
-                colors = CardDefaults.cardColors(
-                    containerColor = Color(0xFFFFFFFF)
-                ),
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(260.dp)
-                    .padding(top = 20.dp)
-                    .align(Alignment.CenterHorizontally)
+                    .weight(1f)
             ) {
-                Image(
-                    painter = rememberAsyncImagePainter(model = recipe?.image),
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
+                Card(
+                    colors = CardDefaults.cardColors(
+                        containerColor = Color(0xFFFFFFFF)
+                    ),
                     modifier = Modifier
-                        .size(350.dp, 260.dp)
+                        .fillMaxWidth()
+                        .height(260.dp)
+                        .padding(top = 20.dp)
                         .align(Alignment.CenterHorizontally)
-                )
-            }
-        }
-        AnimatedVisibility(
-            visible = isShowIngredient,
-        ) {
-            LazyColumn(
-                state = lazyListState2
-            ) {
-                item {
-                    Text(
-                        text = recipe?.recipeName ?: "",
-                        fontSize = 22.sp,
-                        fontWeight = FontWeight(600),
+                ) {
+                    Image(
+                        painter = rememberAsyncImagePainter(model = recipe?.image),
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
                         modifier = Modifier
-                            .padding(start = 30.dp, top = 10.dp)
+                            .size(350.dp, 260.dp)
+                            .align(Alignment.CenterHorizontally)
                     )
                 }
-                item {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
+                Text(
+                    text = recipe?.recipeName ?: "",
+                    fontSize = 22.sp,
+                    fontWeight = FontWeight(600),
+                    modifier = Modifier
+                        .padding(start = 30.dp, top = 10.dp)
+                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .padding(start = 30.dp, top = 10.dp)
+                ) {
+                    Image(
+                        painter = rememberAsyncImagePainter(model = recipe?.userImage),
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
                         modifier = Modifier
-                            .padding(start = 30.dp, top = 10.dp)
-                    ) {
-                        Image(
-                            painter = rememberAsyncImagePainter(model = recipe?.userImage),
-                            contentDescription = null,
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier
-                                .size(30.dp)
-                                .border(1.dp, Color(0xFFF97316), shape = CircleShape)
-                        )
-                        Text(
-                            text = recipe?.userName ?: "",
-                            fontSize = 14.sp,
-                            modifier = Modifier
-                                .padding(start = 10.dp)
-                        )
-                    }
+                            .size(30.dp)
+                            .border(1.dp, Color(0xFFF97316), shape = CircleShape)
+                    )
+                    Text(
+                        text = recipe?.userName ?: "",
+                        fontSize = 14.sp,
+                        modifier = Modifier
+                            .padding(start = 10.dp)
+                    )
                 }
-                item {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .padding(start = 30.dp, top = 8.dp)
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_heart),
+                        tint = Color(0xFFFB923C),
+                        contentDescription = null
+                    )
+                    Text(
+                        text = recipe?.likeQuantity.toString(),
+                        color = Color(0xFF6B7280),
                         modifier = Modifier
-                            .padding(start = 30.dp, top = 8.dp)
-                    ) {
-                        Icon(
-                            painter = painterResource(R.drawable.ic_heart),
-                            tint = Color(0xFFFB923C),
-                            contentDescription = null
-                        )
-                        Text(
-                            text = recipe?.likeQuantity.toString(),
-                            color = Color(0xFF6B7280),
-                            modifier = Modifier
-                                .padding(end = 20.dp, start = 5.dp)
-                        )
-                        Icon(
-                            painter = painterResource(R.drawable.ic_eye),
-                            tint = Color(0xFFFB923C),
-                            contentDescription = null
-                        )
-                        Text(
-                            text = recipe?.viewCount.toString(),
-                            color = Color(0xFF6B7280),
-                            modifier = Modifier
-                                .padding(end = 20.dp, start = 5.dp)
-                        )
-                        Icon(
-                            painter = painterResource(R.drawable.ic_comment),
-                            tint = Color(0xFFFB923C),
-                            contentDescription = null
-                        )
-                        Text(
-                            text = recipe?.viewCount.toString(),
-                            color = Color(0xFF6B7280),
-                            modifier = Modifier
-                                .padding(end = 20.dp, start = 5.dp)
-                        )
-                        Icon(
-                            painter = painterResource(R.drawable.ic_oclock),
-                            tint = Color(0xFFFB923C),
-                            contentDescription = null,
-                        )
-                        Text(
-                            text = recipe?.ration.toString(),
-                            color = Color(0xFF6B7280),
-                            modifier = Modifier
-                                .padding(end = 20.dp, start = 5.dp)
-                        )
-                    }
+                            .padding(end = 20.dp, start = 5.dp)
+                    )
+                    Icon(
+                        painter = painterResource(R.drawable.ic_eye),
+                        tint = Color(0xFFFB923C),
+                        contentDescription = null
+                    )
+                    Text(
+                        text = recipe?.viewCount.toString(),
+                        color = Color(0xFF6B7280),
+                        modifier = Modifier
+                            .padding(end = 20.dp, start = 5.dp)
+                    )
+                    Icon(
+                        painter = painterResource(R.drawable.ic_comment),
+                        tint = Color(0xFFFB923C),
+                        contentDescription = null
+                    )
+                    Text(
+                        text = recipe?.viewCount.toString(),
+                        color = Color(0xFF6B7280),
+                        modifier = Modifier
+                            .padding(end = 20.dp, start = 5.dp)
+                    )
+                    Icon(
+                        painter = painterResource(R.drawable.ic_oclock),
+                        tint = Color(0xFFFB923C),
+                        contentDescription = null,
+                    )
+                    Text(
+                        text = recipe?.ration.toString(),
+                        color = Color(0xFF6B7280),
+                        modifier = Modifier
+                            .padding(end = 20.dp, start = 5.dp)
+                    )
                 }
             }
         }
-        Row(
-            horizontalArrangement = Arrangement.Center,
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 20.dp)
         ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
+            Row(
+                horizontalArrangement = Arrangement.Center,
                 modifier = Modifier
-                    .width(150.dp)
+                    .fillMaxWidth()
+                    .padding(top = 20.dp)
             ) {
-                Text(
-                    textAlign = TextAlign.Center,
-                    text = "Nguyên liệu",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight(600),
-                    modifier = Modifier
-                        .padding(bottom = 6.dp)
-                )
-            }
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier
-                    .width(150.dp)
-            ) {
-                Text(
-                    textAlign = TextAlign.Center,
-                    text = "Cách thực hiện",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight(600),
-                    modifier = Modifier
-                        .padding(bottom = 6.dp)
-                )
-                Box(
-                    modifier = Modifier
-                        .offset(x = offsetX.dp)
-                        .height(6.dp)
-                        .width(90.dp)
-                        .background(Color(0xFFFF7346))
-                )
-            }
-        }
-        Label("Nguyên liệu", modifier = Modifier.padding(start = 20.dp, top = 10.dp))
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .padding(start = 40.dp, top = 5.dp, bottom = 5.dp)
-        ) {
-            Icon(
-                painter = painterResource(R.drawable.ic_little_person),
-                tint = Color(0xFF9CA3AF),
-                contentDescription = null
-            )
-            Text(
-                text = "${recipe?.ration} người",
-                color = Color(0xFF6B7280),
-                modifier = Modifier
-                    .padding(end = 20.dp, start = 10.dp)
-            )
-        }
-        AnimatedVisibility(
-            visible = isShowStep,
-        ) {
-            LazyColumn(
-            ) {
-                items(ingredients.size) { index ->
-                    IngredientItem(ingredients[index])
+                val pages = listOf("Nguyên liệu", "Cách thực hiện")
+                pages.forEachIndexed { index, page ->
+                    Card(
+                        colors = CardDefaults.cardColors(
+                            containerColor = Color(0xFFFFFFFF)
+                        ),
+                        modifier = Modifier
+                            .width(150.dp)
+                            .clickable {
+                                coroutineScope.launch {
+                                    if (index == 0) lazyListState1.scrollToItem(index = index)
+                                    else lazyListState1.scrollToItem(index = index + 1)
+                                }
+                            }
+                            .weight(1f)
+                    ) {
+                        Text(
+                            textAlign = TextAlign.Center,
+                            color = if (selectedPage == index) Color(0xFF1B1B1D) else Color(
+                                0xFF5A5A60
+                            ),
+                            text = page,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight(600),
+                            modifier = Modifier
+                                .padding(bottom = 6.dp)
+                                .align(Alignment.CenterHorizontally)
+                        )
+                    }
                 }
             }
+            ConstraintLayout(
+                modifier = Modifier
+                    .fillMaxWidth()
+            ) {
+                val horizontalGuideline = createGuidelineFromStart(animateFooter)
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth(0.2f)
+                        .height(8.dp)
+                        .background(
+                            color = Color(0xFFFB923C),
+                            shape = RoundedCornerShape(6.dp)
+                        )
+                        .constrainAs(createRef()) {
+                            start.linkTo(horizontalGuideline)
+                            end.linkTo(horizontalGuideline)
+                            bottom.linkTo(parent.bottom)
+                        }
+                )
+            }
         }
-        Label("Cách thực hiện", modifier = Modifier.padding(start = 20.dp, top = 10.dp))
+
         LazyColumn(
             state = lazyListState1
         ) {
-            items(steps.size) { index ->
-                Column(
+            item {
+                Label("Nguyên liệu", modifier = Modifier.padding(start = 20.dp, top = 10.dp))
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
-                        .padding(start = 40.dp, end = 40.dp)
+                        .padding(start = 40.dp, top = 5.dp, bottom = 5.dp)
                 ) {
-                    Text(
-                        text = "Bước ${index + 1}",
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight(600),
-                        modifier = Modifier
-                            .padding(top = 10.dp, bottom = 5.dp)
+                    Icon(
+                        painter = painterResource(R.drawable.ic_little_person),
+                        tint = Color(0xFF9CA3AF),
+                        contentDescription = null
                     )
-                    StepItem(steps[index])
+                    Text(
+                        text = "${recipe?.ration} người",
+                        color = Color(0xFF6B7280),
+                        modifier = Modifier
+                            .padding(end = 20.dp, start = 10.dp)
+                    )
+                }
+            }
+            item {
+                ingredients.forEach { ingredientInput ->
+                    IngredientItem(ingredientInput)
+                }
+            }
+            item {
+                Label("Cách thực hiện", modifier = Modifier.padding(start = 20.dp, top = 10.dp))
+            }
+            item {
+                steps.forEachIndexed { index, stepInput ->
+                    Column(
+                        modifier = Modifier
+                            .padding(start = 40.dp, end = 40.dp)
+                    ) {
+                        Text(
+                            text = "Bước ${index + 1}",
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight(600),
+                            modifier = Modifier
+                                .padding(top = 10.dp, bottom = 5.dp)
+                        )
+                        StepItem(steps[index])
+                    }
                 }
             }
         }
@@ -418,5 +440,5 @@ fun RecipeScreenPreview() {
         "https://helios-i.mashable.com/imagery/articles/040MMJLdogUu9t7WB5h2Vbv/hero-image.fill.size_1248x702.v1740075757.jpg",
         false
     )
-    RecipeScreen(rememberNavController(),recipeId = recipe.recipeId!!)
+    RecipeScreen(rememberNavController(), recipeId = recipe.recipeId!!)
 }
