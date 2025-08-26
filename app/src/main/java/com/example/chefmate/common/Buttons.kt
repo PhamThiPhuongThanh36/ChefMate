@@ -20,8 +20,8 @@ fun CustomButton(text: String, onClick: () -> Unit, modifier: Modifier) {
             containerColor = Color(0xFFF97316)
         ),
         modifier = modifier
-            .fillMaxWidth(0.8f)
-            .padding(start = 40.dp, end = 40.dp, top = 10.dp, bottom = 10.dp)
+//            .fillMaxWidth(0.8f)
+//            .padding(start = 40.dp, end = 40.dp, top = 10.dp, bottom = 10.dp)
     ) {
         Text(
             text = text,

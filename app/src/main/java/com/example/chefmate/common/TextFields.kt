@@ -4,11 +4,13 @@ import android.widget.EditText
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
@@ -48,17 +50,23 @@ fun SearchBar(
     content: String,
     onValueChange: (String) -> Unit,
     placeholder: String,
+    modifier: Modifier = Modifier,
     trailingIcons: @Composable (() -> Unit)? = null,
     onTrailingIconClick: (() -> Unit)? = null,
 ) {
-    Row(
-        horizontalArrangement = Arrangement.Center,
-        modifier = Modifier
-            .fillMaxWidth()
+    Card(
+        colors = CardDefaults.cardColors(
+            containerColor = Color(0xFFFFFFFF)
+        ),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 7.dp
+        ),
+        modifier = modifier
             .padding(top = 20.dp)
     ) {
         TextField(
             value = content,
+            shape = RoundedCornerShape(12.dp),
             onValueChange = onValueChange,
             singleLine = true,
             placeholder = {
@@ -83,8 +91,7 @@ fun SearchBar(
                 )
             },
             modifier = Modifier
-                .fillMaxWidth(0.8f)
-                .shadow(10.dp, shape = CircleShape)
+                .fillMaxWidth(0.85f)
         )
     }
 }
@@ -131,7 +138,7 @@ fun CustomEditText(
 }
 
 @Composable
-fun EditTextWithouthLabel(
+fun EditTextWithouthDescripe(
     value: String,
     onValueChange: (String) -> Unit,
     label: String,
@@ -255,6 +262,38 @@ fun TimeDropdown(
 }
 
 @Composable
+fun EditTextWithPlaceholder(value: String, onValueChange: (String) -> Unit, placeholder: String, modifier: Modifier) {
+    Card(
+        colors = CardDefaults.cardColors(
+            containerColor = Color(0xFFFFFFFF)
+        ),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 7.dp
+        ),
+        shape = RoundedCornerShape(12.dp),
+        modifier = modifier
+    ) {
+        TextField(
+            value = value,
+            onValueChange = onValueChange,
+            singleLine = true,
+            placeholder = {
+                Text(
+                    text = placeholder,
+                    color = Color(0xFFADAEBC)
+                )
+            },
+            colors = TextFieldDefaults.colors(
+                focusedContainerColor = Color(0xFFFFFFFF),
+                unfocusedContainerColor = Color(0xFFFFFFFF),
+                focusedIndicatorColor = Color.Transparent,
+                unfocusedIndicatorColor = Color.Transparent
+            ),
+        )
+    }
+}
+
+@Composable
 fun AddIndredientEditText(
     name: String,
     onNameChange: (String) -> Unit,
@@ -345,9 +384,11 @@ fun TextFieldPreview() {
             .fillMaxSize()
             .background(Color(0xFFFFFFFF))
     ) {
-        ItemSetting(
-            icon = R.drawable.ic_email,
-            content = "Đăng xuất"
+        EditTextWithPlaceholder(
+            value = "",
+            onValueChange = {},
+            placeholder = "Nhập tên công thức",
+            modifier = Modifier
         )
     }
 }
