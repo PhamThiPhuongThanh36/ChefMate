@@ -57,6 +57,9 @@ fun HomeScreen() {
             content = searchText,
             onValueChange = { searchText = it },
             placeholder = "Tìm kiếm công thức",
+            modifier = Modifier
+                .fillMaxWidth(0.85f)
+                .align(Alignment.CenterHorizontally)
         )
         Label(
             text = "Phổ biến",
