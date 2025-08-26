@@ -22,6 +22,7 @@ import androidx.navigation.navArgument
 import com.example.chefmate.ui.main.MainAct
 import com.example.chefmate.ui.recipe.AddRecipeScreen
 import com.example.chefmate.ui.recipe.RecipeScreen
+import com.example.chefmate.ui.shopping.AddShoppingScreen
 import com.example.chefmate.ui.theme.ChefMateTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -63,6 +64,9 @@ fun NavGraph(activity: Activity, navController: NavController): NavGraph {
         ) { backStackEntry ->
             val recipeId = backStackEntry.arguments?.getInt("recipeId") ?: 0
             RecipeScreen(navController, recipeViewModel = hiltViewModel(), recipeId)
+        }
+        composable("addShopping") {
+            AddShoppingScreen(navController, recipeViewModel = hiltViewModel())
         }
     }
 }
