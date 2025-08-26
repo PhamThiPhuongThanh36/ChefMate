@@ -44,7 +44,7 @@ import coil.compose.rememberAsyncImagePainter
 import com.example.chefmate.R
 import com.example.chefmate.common.AddIndredientEditText
 import com.example.chefmate.common.CustomButton
-import com.example.chefmate.common.EditTextWithouthLabel
+import com.example.chefmate.common.EditTextWithouthDescripe
 import com.example.chefmate.common.Header
 import com.example.chefmate.common.Label
 import com.example.chefmate.common.TimeDropdown
@@ -109,7 +109,7 @@ fun AddRecipeScreen(navController: NavController, recipeViewModel: RecipeViewMod
                 .verticalScroll(rememberScrollState())
                 .padding(bottom = 30.dp)
         ) {
-                  Image(
+            Image(
                 painter = if (imageUri == null) painterResource(R.drawable.ic_picture_placeholder) else rememberAsyncImagePainter(imageUri),
                 contentDescription = null,
                 contentScale = if (imageUri == null) ContentScale.Fit else ContentScale.Crop,
@@ -119,14 +119,14 @@ fun AddRecipeScreen(navController: NavController, recipeViewModel: RecipeViewMod
                         launcher.launch("image/*")
                     }
             )
-            EditTextWithouthLabel(
+            EditTextWithouthDescripe(
                 value = recipeName,
                 onValueChange = { recipeName = it },
                 label = "Tên công thức",
                 modifier = Modifier
                     .fillMaxWidth(0.85f)
             )
-            EditTextWithouthLabel(
+            EditTextWithouthDescripe(
                 value = tags,
                 onValueChange = { tags = it },
                 label = "Tags",
@@ -139,7 +139,7 @@ fun AddRecipeScreen(navController: NavController, recipeViewModel: RecipeViewMod
                     .fillMaxWidth(0.85f)
                     .padding(top = 10.dp),
             ) {
-                EditTextWithouthLabel(
+                EditTextWithouthDescripe(
                     value = cookingTime,
                     onValueChange = { cookingTime = it },
                     label = "Thời gian nấu",
@@ -154,7 +154,7 @@ fun AddRecipeScreen(navController: NavController, recipeViewModel: RecipeViewMod
                         .weight(1f)
                 )
             }
-            EditTextWithouthLabel(
+            EditTextWithouthDescripe(
                 value = ration,
                 onValueChange = { ration = it },
                 label = "Khẩu phần ăn",
@@ -248,7 +248,7 @@ fun AddRecipeScreen(navController: NavController, recipeViewModel: RecipeViewMod
                     .fillMaxWidth(0.85f)
             ) {
                 steps.forEachIndexed { index, item ->
-                    EditTextWithouthLabel(
+                    EditTextWithouthDescripe(
                         value = item.description,
                         onValueChange = { steps[index] = item.copy(description = it) },
                         label = "Bước ${index + 1}",
