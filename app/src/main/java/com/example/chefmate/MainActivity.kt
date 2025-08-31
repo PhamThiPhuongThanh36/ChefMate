@@ -20,9 +20,10 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.createGraph
 import androidx.navigation.navArgument
 import com.example.chefmate.ui.main.MainAct
-import com.example.chefmate.ui.recipe.AddRecipeScreen
+import com.example.chefmate.ui.recipe.AddEditRecipeScreen
 import com.example.chefmate.ui.recipe.RecipeScreen
 import com.example.chefmate.ui.shopping.AddShoppingScreen
+import com.example.chefmate.ui.shopping.ShoppingScreen
 import com.example.chefmate.ui.theme.ChefMateTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -55,8 +56,16 @@ fun NavGraph(activity: Activity, navController: NavController): NavGraph {
         composable("mainAct") {
             MainAct(navController)
         }
-        composable("addRecipe") {
-            AddRecipeScreen(navController)
+        composable(
+            route = "addRecipe/{recipeId}",
+            arguments = listOf(
+                navArgument("recipeId") {
+                    type = NavType.IntType
+                }
+            )
+        ) { backStackEntry ->
+            val recipeId = backStackEntry.arguments?.getInt("recipeId") ?: -1
+            AddEditRecipeScreen(recipeId = recipeId, navController)
         }
         composable(
             route = "recipeDetail/{recipeId}",
@@ -65,8 +74,12 @@ fun NavGraph(activity: Activity, navController: NavController): NavGraph {
             val recipeId = backStackEntry.arguments?.getInt("recipeId") ?: 0
             RecipeScreen(navController, recipeViewModel = hiltViewModel(), recipeId)
         }
+        composable("shopping/{shoppingId}", arguments = listOf(navArgument("shoppingId") { type = NavType.IntType })) { backStackEntry ->
+            val shoppingId = backStackEntry.arguments?.getInt("shoppingId") ?: -1 // Default -1 nếu null
+            ShoppingScreen(shoppingId = shoppingId, navController = navController)
+        }
         composable("addShopping") {
-            AddShoppingScreen(navController, recipeViewModel = hiltViewModel())
+            AddShoppingScreen(navController = navController, recipeViewModel = hiltViewModel(), shoppingViewModel = hiltViewModel())
         }
     }
 }

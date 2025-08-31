@@ -24,6 +24,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -33,21 +34,26 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.chefmate.R
+import com.example.chefmate.helper.DataStoreHelper
 import com.example.chefmate.ui.account.AccountScreen
 import com.example.chefmate.ui.recipe.RecipeListScreen
+import com.example.chefmate.viewmodel.RecipeViewModel
+import com.example.chefmate.viewmodel.ShoppingViewModel
 import kotlinx.coroutines.launch
 
 @Composable
-fun MainAct(navController: NavController) {
+fun MainAct(navController: NavController, shoppingViewModel: ShoppingViewModel = hiltViewModel()) {
     val paperState = rememberPagerState (
         initialPage = 0,
         pageCount = { 3 }
@@ -98,9 +104,11 @@ fun BottomNavigationBar(
     selectedIndex: Int,
     onTabSelected: (Int) -> Unit,
 ) {
+    val context = LocalContext.current
     val items = listOf("Trang chủ", "Kho công thức", "Tài khoản")
     val icons = listOf(R.drawable.ic_home, R.drawable.ic_save, R.drawable.ic_person)
     var isShowOption by remember { mutableStateOf(false) }
+    val coroutineScope = rememberCoroutineScope()
     val animeOptionsBackgroud by animateFloatAsState(
         targetValue = if (isShowOption) 1f else 0f,
         animationSpec = spring(
@@ -209,7 +217,7 @@ fun BottomNavigationBar(
                         modifier = Modifier
                             .padding(bottom = 20.dp)
                             .clickable {
-                                navController.navigate("addRecipe")
+                                navController.navigate("addRecipe/${-1}")
                             }
                     ) {
                         Text(
@@ -239,7 +247,15 @@ fun BottomNavigationBar(
                         modifier = Modifier
                             .padding(bottom = 20.dp)
                             .clickable {
-                                navController.navigate("addShopping")
+                                coroutineScope.launch {
+                                    if (DataStoreHelper.isFinishedShopping(context = context)) {
+                                        navController.navigate("addShopping")
+                                    } else {
+                                        val shoppingId = DataStoreHelper.getLastShoppingId(context = context)
+                                        navController.navigate("shopping/$shoppingId")
+                                    }
+                                }
+
                             }
                     ) {
                         Text(
@@ -290,6 +306,6 @@ fun BottomNavigationBar(
 @Preview
 @Composable
 fun MainActPreview() {
-    MainAct(navController = rememberNavController()
-    )
+//    MainAct(navController = rememberNavController()
+//    )
 }
