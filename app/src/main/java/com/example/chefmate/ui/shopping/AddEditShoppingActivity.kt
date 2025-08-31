@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -24,39 +25,52 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.SearchBar
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.chefmate.R
 import com.example.chefmate.common.CustomButton
 import com.example.chefmate.common.Header
 import com.example.chefmate.common.Label
+import com.example.chefmate.database.entity.IngredientEntity
 import com.example.chefmate.database.entity.RecipeEntity
+import com.example.chefmate.database.entity.ShoppingEntity
+import com.example.chefmate.database.entity.ShoppingItemEntity
+import com.example.chefmate.helper.DataStoreHelper
+import com.example.chefmate.model.IngredientInput
+import com.example.chefmate.ui.recipe.IngredientItem
 import com.example.chefmate.viewmodel.RecipeViewModel
+import com.example.chefmate.viewmodel.ShoppingViewModel
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddShoppingScreen(navController: NavController, recipeViewModel: RecipeViewModel = hiltViewModel()) {
+fun AddShoppingScreen(
+    navController: NavController,
+    recipeViewModel: RecipeViewModel,
+    shoppingViewModel: ShoppingViewModel
+) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -65,12 +79,15 @@ fun AddShoppingScreen(navController: NavController, recipeViewModel: RecipeViewM
     ) {
         var searchInput by remember { mutableStateOf("") }
         val recipes = recipeViewModel.allRecipes.collectAsState(initial = emptyList())
-        val selectedRecipes by remember { mutableStateOf<List<RecipeEntity>>(emptyList()) }
+        var selectedRecipes by remember { mutableStateOf<List<RecipeEntity>>(emptyList()) }
         var ingredientName by remember { mutableStateOf("") }
         var ingredientWeight by remember { mutableStateOf("") }
         var ingredientUnit by remember { mutableStateOf("") }
         var isShowAddManualIngredient by remember { mutableStateOf(false) }
         val sheetState = rememberModalBottomSheetState()
+        var ingredients = remember { mutableStateListOf<IngredientInput>() }
+        val coroutineScope = rememberCoroutineScope()
+        val context = LocalContext.current
         Header(
             leadingIcon = {
                 Icon(
@@ -79,7 +96,7 @@ fun AddShoppingScreen(navController: NavController, recipeViewModel: RecipeViewM
                     tint = Color(0xFFFFFFFF)
                 )
             },
-            onClickLeadingIcon = { navController.popBackStack() },
+            onClickLeadingIcon = { navController.navigate("mainAct") },
             title = "Lập danh sách mua sắm",
         )
         com.example.chefmate.common.SearchBar(
@@ -117,7 +134,7 @@ fun AddShoppingScreen(navController: NavController, recipeViewModel: RecipeViewM
                         .size(180.dp, 105.dp)
                         .padding(horizontal = 8.dp)
                 ) {
-                    var isChecked by remember { mutableStateOf(false) }
+                    val isRecipeSelected = selectedRecipes.any { it.recipeId == recipes.value[index].recipeId }
                     Row(
                         modifier = Modifier
                             .fillMaxSize()
@@ -128,15 +145,17 @@ fun AddShoppingScreen(navController: NavController, recipeViewModel: RecipeViewM
                                 .weight(7f)
                         ) {
                             Checkbox(
-                                checked = isChecked,
-                                onCheckedChange = {
-                                    isChecked = !isChecked
+                                checked = isRecipeSelected,
+                                onCheckedChange = { isChecked ->
+                                    selectedRecipes = if (isChecked) {
+                                        selectedRecipes + recipes.value[index]
+                                    } else {
+                                        selectedRecipes.filter { it.recipeId != recipes.value[index].recipeId }
+                                    }
                                 }
                             )
-                            if (isChecked) {
-                                selectedRecipes + recipes.value[index]
-                            } else {
-                                selectedRecipes.filter { it.recipeId != recipes.value[index].recipeId }
+                            selectedRecipes.forEach{ recipe ->
+                                Log.d("Selected recipe: ", "${recipe.recipeName}")
                             }
                             Log.d("selectedRecipes", selectedRecipes.toString())
                             Text(
@@ -174,7 +193,7 @@ fun AddShoppingScreen(navController: NavController, recipeViewModel: RecipeViewM
             shape = RoundedCornerShape(15.dp),
             modifier = Modifier
                 .fillMaxWidth(0.9f)
-                .height(160.dp)
+                .height(200.dp)
                 .padding(top = 20.dp)
                 .align(Alignment.CenterHorizontally)
         ) {
@@ -203,6 +222,11 @@ fun AddShoppingScreen(navController: NavController, recipeViewModel: RecipeViewM
                         )
                     }
                 }
+                LazyColumn {
+                    items(ingredients.size) { index ->
+                        IngredientItem(ingredient = ingredients[index])
+                    }
+                }
             }
         }
         if (isShowAddManualIngredient) {
@@ -220,6 +244,13 @@ fun AddShoppingScreen(navController: NavController, recipeViewModel: RecipeViewM
                     ingredientUnit = ingredientUnit,
                     onUnitChange = { ingredientUnit = it },
                     onClick = {
+                        val newIngredient = IngredientInput(
+                            ingredientName = ingredientName,
+                            weight = ingredientWeight,
+                            unit = ingredientUnit
+                        )
+                        ingredients.add(newIngredient)
+                        Log.d("ingredients", ingredients.toString())
                         isShowAddManualIngredient = false
                     }
                 )
@@ -227,7 +258,46 @@ fun AddShoppingScreen(navController: NavController, recipeViewModel: RecipeViewM
         }
         CustomButton(
             text = "Hoàn thành",
-            onClick = {},
+            onClick = {
+                coroutineScope.launch {
+                    val shoppingId = shoppingViewModel.insertShoppingList(
+                        ShoppingEntity(
+                            status = false
+                        )
+                    )
+                    selectedRecipes.forEach { recipe ->
+                        val listIngredientRecipe = recipe.recipeId?.let { shoppingViewModel.getIngredientsByRecipeId(it) }
+                        listIngredientRecipe?.first()?.forEach { item ->
+                            shoppingViewModel.insertShoppingItem(
+                                ShoppingItemEntity(
+                                    shoppingId = shoppingId.toInt(),
+                                    ingredientId = item.ingredientId,
+                                    status = false
+                                )
+                            )
+                        }
+                    }
+                    ingredients.forEach{ item ->
+                        val ingredentId = shoppingViewModel.insertIngredient(
+                            IngredientEntity(
+                                ingredientName = item.ingredientName,
+                                weight = item.weight.toDouble(),
+                                unit = item.unit,
+                            )
+                        )
+
+                        shoppingViewModel.insertShoppingItem(
+                            ShoppingItemEntity(
+                                shoppingId = shoppingId.toInt(),
+                                ingredientId = ingredentId.toInt(),
+                                status = false
+                            )
+                        )
+                    }
+                    DataStoreHelper.updateLastShopping(context, shoppingId.toInt())
+                    navController.navigate("shopping/$shoppingId")
+                }
+            },
             modifier = Modifier
                 .padding(top = 20.dp, end = 20.dp)
                 .align(Alignment.End)
@@ -239,5 +309,5 @@ fun AddShoppingScreen(navController: NavController, recipeViewModel: RecipeViewM
 @Preview
 @Composable
 fun AddShoppingScreenPreview() {
-    AddShoppingScreen(navController = rememberNavController(), recipeViewModel = hiltViewModel())
+//    AddShoppingScreen(navController = rememberNavController(), recipeViewModel )
 }

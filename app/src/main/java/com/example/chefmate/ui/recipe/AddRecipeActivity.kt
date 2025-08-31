@@ -60,7 +60,7 @@ import kotlinx.coroutines.withContext
 
 
 @Composable
-fun AddRecipeScreen(navController: NavController, recipeViewModel: RecipeViewModel = hiltViewModel()) {
+fun AddEditRecipeScreen(recipeId: Int, navController: NavController, recipeViewModel: RecipeViewModel = hiltViewModel()) {
     val coroutineScope = rememberCoroutineScope()
     var recipeName by remember { mutableStateOf("") }
     var tags by remember { mutableStateOf("") }
@@ -328,6 +328,6 @@ fun AddRecipeScreen(navController: NavController, recipeViewModel: RecipeViewMod
 
 @Preview
 @Composable
-fun AddRecipeScreenPreview() {
-    AddRecipeScreen(rememberNavController())
+fun AddEditRecipeScreenPreview() {
+    AddEditRecipeScreen(-1, rememberNavController())
 }
