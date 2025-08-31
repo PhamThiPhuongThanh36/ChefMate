@@ -41,4 +41,8 @@ class RecipeRepository @Inject constructor(
     suspend fun insertSteps(steps: List<StepEntity>) {
         return stepDao.insertSteps(steps)
     }
+
+    suspend fun deleteRecipeById(recipeId: Int) {
+        return recipeDao.deleteRecipeById(recipeId)
+    }
 }

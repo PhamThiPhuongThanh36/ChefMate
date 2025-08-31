@@ -2,6 +2,7 @@ package com.example.chefmate.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewModelScope
 import com.example.chefmate.database.entity.IngredientEntity
 import com.example.chefmate.database.entity.RecipeEntity
 import com.example.chefmate.database.entity.StepEntity
@@ -11,6 +12,7 @@ import com.example.chefmate.repository.RecipeRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
@@ -39,14 +41,11 @@ class RecipeViewModel @Inject constructor(private val repository: RecipeReposito
     fun getStepsByRecipeId(recipeId: Int): Flow<List<StepEntity>> {
         return repository.getAllStepsByRecipeId(recipeId)
     }
-}
 
-class RecipeViewModelFactory(private val recipeRepository: RecipeRepository) : ViewModelProvider.Factory {
-    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(RecipeViewModel::class.java)) {
-            @Suppress("UNCHECKED_CAST")
-            return RecipeViewModel(recipeRepository) as T
+    suspend fun deleteRecipeById(recipeId: Int) {
+        viewModelScope.launch {
+            repository.deleteRecipeById(recipeId)
         }
-        throw IllegalArgumentException("Unknown ViewModel class")
     }
 }
+
