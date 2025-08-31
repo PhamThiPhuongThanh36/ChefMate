@@ -1,6 +1,5 @@
 package com.example.chefmate.common
 
-// Có thể đặt ở cuối tệp AddRecipeActivity.kt hoặc tạo một tệp FileUtil.kt mới
 import android.content.Context
 import android.net.Uri
 import java.io.File
