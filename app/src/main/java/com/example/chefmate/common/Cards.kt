@@ -7,6 +7,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -72,7 +73,7 @@ fun SmallCard(content: String, img: Int) {
 
 
 @Composable
-fun BigCard(recipe: Recipe, onClick: () -> Unit) {
+fun BigCard(recipe: Recipe, onClick: () -> Unit, modifier: Modifier = Modifier, edit: @Composable (() -> Unit)? = null, delete: @Composable (() -> Unit)? = null ) {
     Card(
         colors = CardDefaults.cardColors(
             containerColor = Color(0xFFFFFFFF)
@@ -80,9 +81,8 @@ fun BigCard(recipe: Recipe, onClick: () -> Unit) {
         elevation = CardDefaults.cardElevation(
             defaultElevation = 5.dp
         ),
-        modifier = Modifier
+        modifier = modifier
             .padding(10.dp)
-            .fillMaxWidth(0.9f)
             .height(280.dp)
             .clickable { onClick() }
     ) {
@@ -104,13 +104,21 @@ fun BigCard(recipe: Recipe, onClick: () -> Unit) {
                     .fillMaxWidth()
                     .height(180.dp)
             )
-            Text(
-                text = recipe.recipeName,
-                fontWeight = FontWeight.Bold,
-                fontSize = 16.sp,
+            Row(
                 modifier = Modifier
-                    .padding(start = 20.dp, top = 5.dp)
-            )
+                    .fillMaxWidth()
+                    .padding(start = 20.dp, top = 5.dp, end = 20.dp)
+            ) {
+                Text(
+                    text = recipe.recipeName,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 16.sp,
+                )
+                Spacer(modifier = Modifier.weight(1f))
+                if (edit != null) {
+                    edit()
+                }
+            }
             Text(
                 text = recipe.userName,
                 fontSize = 12.sp,
@@ -123,7 +131,7 @@ fun BigCard(recipe: Recipe, onClick: () -> Unit) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
-                    .padding(start = 20.dp, top = 5.dp)
+                    .padding(start = 20.dp, top = 5.dp, end = 20.dp)
             ) {
                 Icon(
                     painter = painterResource(R.drawable.ic_heart),
@@ -158,6 +166,10 @@ fun BigCard(recipe: Recipe, onClick: () -> Unit) {
                     modifier = Modifier
                         .padding(start = 5.dp)
                 )
+                Spacer(modifier = Modifier.weight(1f))
+                if (delete != null) {
+                    delete()
+                }
             }
         }
     }
