@@ -6,6 +6,7 @@ import androidx.room.RoomDatabase
 import androidx.room.Room
 import com.example.chefmate.database.dao.IngredientDao
 import com.example.chefmate.database.dao.RecipeDao
+import com.example.chefmate.database.dao.ShoppingDao
 import com.example.chefmate.database.dao.StepDao
 import com.example.chefmate.database.entity.IngredientEntity
 import com.example.chefmate.database.entity.RecipeEntity
@@ -29,6 +30,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun recipeDao(): RecipeDao
     abstract fun ingredientDao(): IngredientDao
     abstract fun stepDao(): StepDao
+    abstract fun shoppingDao(): ShoppingDao
 
     companion object {
         @Volatile
