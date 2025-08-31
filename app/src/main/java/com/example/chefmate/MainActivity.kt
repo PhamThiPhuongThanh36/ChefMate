@@ -61,6 +61,7 @@ fun NavGraph(activity: Activity, navController: NavController): NavGraph {
             arguments = listOf(
                 navArgument("recipeId") {
                     type = NavType.IntType
+                    defaultValue = -1
                 }
             )
         ) { backStackEntry ->
