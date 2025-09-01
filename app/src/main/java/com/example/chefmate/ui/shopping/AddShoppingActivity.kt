@@ -271,25 +271,21 @@ fun AddShoppingScreen(
                             shoppingViewModel.insertShoppingItem(
                                 ShoppingItemEntity(
                                     shoppingId = shoppingId.toInt(),
-                                    ingredientId = item.ingredientId,
+                                    siName = item.ingredientName,
+                                    siWeight = item.weight,
+                                    siUnit = item.unit,
                                     status = false
                                 )
                             )
                         }
                     }
                     ingredients.forEach{ item ->
-                        val ingredentId = shoppingViewModel.insertIngredient(
-                            IngredientEntity(
-                                ingredientName = item.ingredientName,
-                                weight = item.weight.toDouble(),
-                                unit = item.unit,
-                            )
-                        )
-
                         shoppingViewModel.insertShoppingItem(
                             ShoppingItemEntity(
                                 shoppingId = shoppingId.toInt(),
-                                ingredientId = ingredentId.toInt(),
+                                siName = item.ingredientName,
+                                siWeight = item.weight,
+                                siUnit = item.unit,
                                 status = false
                             )
                         )
