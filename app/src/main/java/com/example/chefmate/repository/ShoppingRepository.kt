@@ -47,4 +47,8 @@ class ShoppingRepository @Inject constructor(
     suspend fun updateStatusShoppingItem(status: Boolean, siId: Int) {
         shoppingDao.updateStatusShoppingItem(status, siId)
     }
+
+    suspend fun deleteShoppingItemById(siId: Int) {
+        shoppingDao.deleteShoppingItemById(siId)
+    }
 }

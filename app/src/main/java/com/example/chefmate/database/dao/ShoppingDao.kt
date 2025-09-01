@@ -35,4 +35,6 @@ interface ShoppingDao {
     @Query("UPDATE ShoppingLists SET status = :status WHERE shoppingId = :shoppingId")
     suspend fun updateStatusShoppingList(status: Boolean, shoppingId: Int)
 
+    @Query("DELETE FROM ShoppingItems WHERE siId = :siId")
+    suspend fun deleteShoppingItemById(siId: Int)
 }
