@@ -10,15 +10,7 @@ data class IngredientEntity(
     val ingredientId: Int? = null,
     val recipeId: Int? = null,
     val ingredientName: String,
-    val weight: Double,
+    val weight: String,
     val unit: String
 )
-
-fun IngredientEntity.toIngredient(): IngredientInput {
-    return IngredientInput(
-        ingredientName = this.ingredientName,
-        weight = this.weight.toString(),
-        unit = this.unit
-    )
-}
 
