@@ -294,13 +294,14 @@ fun EditTextWithPlaceholder(value: String, onValueChange: (String) -> Unit, plac
 }
 
 @Composable
-fun AddIndredientEditText(
+fun AddIngredientEditText(
     name: String,
     onNameChange: (String) -> Unit,
     quantity: String,
     onQuantityChange: (String) -> Unit,
     unit: String,
     onUnitChange: (String) -> Unit,
+    deleteIngredient: @Composable (() -> Unit)? = null,
     modifier: Modifier = Modifier,
 ) {
     Card(
@@ -310,24 +311,34 @@ fun AddIndredientEditText(
         modifier = modifier
             .padding(3.dp)
             .border(1.dp, Color(0xFFA3A3A3), RoundedCornerShape(10.dp))
+//            .padding(end = 20.dp)
     ) {
-        Column {
-            TextField(
-                value = name,
-                onValueChange = onNameChange,
-                singleLine = true,
-                label = {
-                    Text(text = "Tên nguyên liệu")
-                },
-                colors = TextFieldDefaults.colors(
-                    focusedContainerColor = Color(0xFFFFFFFF),
-                    unfocusedContainerColor = Color(0xFFFFFFFF),
-                    focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent
-                ),
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
-                    .fillMaxWidth()
-            )
+            ) {
+                TextField(
+                    value = name,
+                    onValueChange = onNameChange,
+                    singleLine = true,
+                    label = {
+                        Text(text = "Tên nguyên liệu")
+                    },
+                    colors = TextFieldDefaults.colors(
+                        focusedContainerColor = Color(0xFFFFFFFF),
+                        unfocusedContainerColor = Color(0xFFFFFFFF),
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent
+                    ),
+                    modifier = Modifier
+                )
+                Spacer(modifier = Modifier.weight(1f))
+                deleteIngredient?.invoke()
+            }
             HorizontalDivider(
                 modifier = Modifier
                     .fillMaxWidth(0.9f)
