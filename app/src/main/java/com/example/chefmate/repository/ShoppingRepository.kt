@@ -17,13 +17,6 @@ class ShoppingRepository @Inject constructor(
 
     fun getAllShoppingLists() = shoppingDao.getAllShoppingLists()
 
-    suspend fun updateIngredient(ingredient: IngredientEntity) {
-        ingredientDao.updateIngredient(ingredient)
-    }
-
-    suspend fun insertIngredient(ingredient: IngredientEntity): Long {
-        return ingredientDao.insertIngredient(ingredient)
-    }
     suspend fun insertShoppingList(shoppingList: ShoppingEntity): Long{
         return shoppingDao.insertShoppingList(shoppingList)
     }

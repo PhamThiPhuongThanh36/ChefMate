@@ -21,16 +21,10 @@ class ShoppingViewModel @Inject constructor(private val repository: ShoppingRepo
 
     fun getIngredientById(ingredientId: Int) = repository.getIngredientById(ingredientId)
     fun getIngredientsByRecipeId(recipeId: Int) = repository.getIngredientsByRecipeId(recipeId)
-    suspend fun updateIngredient(ingredient: IngredientEntity) {
-        repository.updateIngredient(ingredient)
-    }
+
     suspend fun insertShoppingList(shoppingList: ShoppingEntity): Long {
         val id = repository.insertShoppingList(shoppingList)
         return id
-    }
-
-    suspend fun insertIngredient(ingredient: IngredientEntity): Long {
-        return repository.insertIngredient(ingredient)
     }
 
     suspend fun insertShoppingItems(shoppingItems: List<ShoppingItemEntity>) {
