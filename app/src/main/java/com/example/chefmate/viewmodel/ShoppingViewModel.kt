@@ -49,7 +49,12 @@ class ShoppingViewModel @Inject constructor(private val repository: ShoppingRepo
         repository.updateStatusShoppingItem(status, siId)
     }
 
+    suspend fun deleteShoppingItemById(siId: Int) {
+        repository.deleteShoppingItemById(siId)
+    }
+
     suspend fun updateShoppingItem(shoppingItem: ShoppingItemEntity) {
         repository.updateShoppingItem(shoppingItem)
     }
+
 }
