@@ -1,12 +1,9 @@
 package com.example.chefmate.ui.shopping
 
-import android.annotation.SuppressLint
-import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -16,18 +13,15 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Icon
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -53,7 +47,6 @@ import com.example.chefmate.database.entity.ShoppingItemEntity
 import com.example.chefmate.helper.DataStoreHelper
 import com.example.chefmate.ui.homescreen.Header
 import com.example.chefmate.viewmodel.ShoppingViewModel
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 @Composable
@@ -75,12 +68,11 @@ fun ShoppingScreen(
         var isShowEditIngredient by remember { mutableStateOf(false) }
         var isShowDeleteIngredient by remember { mutableStateOf(false) }
         val context = LocalContext.current
-        var ingredientEdit by remember { mutableStateOf<IngredientEntity?>(null) }
-        var ingredientEditId by remember { mutableStateOf<Int?>(null) }
-        var shoppingDeleteId by remember { mutableStateOf<Int?>(null) }
+        var siEditId by remember { mutableStateOf<Int?>(null) }
+        var siEdit by remember { mutableStateOf<ShoppingItemEntity?>(null) }
+        var siDeleteId by remember { mutableStateOf<Int?>(null) }
         var ingredientDelete by remember { mutableStateOf<IngredientEntity?>(null) }
         var listShoppingItems by remember { mutableStateOf<List<ShoppingItemEntity>>(emptyList()) }
-        var listShoppingItemsIngredient by remember { mutableStateOf<List<IngredientEntity>>(emptyList()) }
         val coroutineScope = rememberCoroutineScope()
         var refreshKey by remember { mutableStateOf(0) }
 
@@ -90,12 +82,6 @@ fun ShoppingScreen(
                     shoppingViewModel.getShoppingItemsById(shoppingId).collect { items ->
                         val sortedItems = items.sortedBy { it.status }
                         listShoppingItems = sortedItems
-                        val ingredients = sortedItems.mapNotNull { item ->
-                            item.ingredientId?.let { ingId ->
-                                shoppingViewModel.getIngredientById(ingId).first()
-                            }
-                        }
-                        listShoppingItemsIngredient = ingredients
                     }
                 }
             }
@@ -154,12 +140,10 @@ fun ShoppingScreen(
                                         }
                                     }
                                 )
-                                if (index < listShoppingItemsIngredient.size) {
-                                    Text(
-                                        text = "${listShoppingItemsIngredient[index].ingredientName} ${formatWeight(listShoppingItemsIngredient[index].weight)} ${listShoppingItemsIngredient[index].unit}",
-                                        textDecoration = if(listShoppingItems[index].status) TextDecoration.LineThrough else TextDecoration.None
-                                    )
-                                }
+                                Text(
+                                    text = "${listShoppingItems[index].siName} ${listShoppingItems[index].siWeight} ${listShoppingItems[index].siUnit}",
+                                    textDecoration = if(listShoppingItems[index].status) TextDecoration.LineThrough else TextDecoration.None
+                                )
                                 Spacer(modifier = Modifier.weight(1f))
                                 Icon(
                                     painter = painterResource(R.drawable.ic_edit),
@@ -168,8 +152,8 @@ fun ShoppingScreen(
                                     modifier = Modifier
                                         .padding(end = 10.dp)
                                         .clickable {
-                                            ingredientEditId = listShoppingItems[index].ingredientId
-                                            ingredientEdit = listShoppingItemsIngredient[index].copy()
+                                            siEditId = listShoppingItems[index].siId
+                                            siEdit = listShoppingItems[index].copy()
                                             isShowEditIngredient = true
                                         }
                                 )
@@ -179,8 +163,7 @@ fun ShoppingScreen(
                                     tint = Color(0xFF4C4C4C),
                                     modifier = Modifier
                                         .clickable {
-                                            shoppingDeleteId = listShoppingItems[index].siId
-                                            ingredientDelete = listShoppingItemsIngredient[index].copy()
+                                            siDeleteId = listShoppingItems[index].siId
                                             isShowDeleteIngredient = true
                                         }
                                 )
@@ -212,27 +195,29 @@ fun ShoppingScreen(
                         onDismiss = {
                             isShowEditIngredient = false
                         },
-                        ingredientName = ingredientEdit?.ingredientName ?: "",
+                        ingredientName = siEdit?.siName ?: "",
                         onNameChange = {
-                            ingredientEdit = ingredientEdit?.copy(ingredientName = it)
+                            siEdit = siEdit?.copy(siName = it)
                         },
-                        ingredientWeight = ingredientEdit?.weight.toString(),
+                        ingredientWeight = siEdit?.siWeight.toString(),
                         onWeightChange = {
-                            ingredientEdit = ingredientEdit?.copy(weight = it.toDouble())
+                            siEdit = siEdit?.copy(siWeight = it)
                         },
-                        ingredientUnit = ingredientEdit?.unit ?: "",
+                        ingredientUnit = siEdit?.siUnit ?: "",
                         onUnitChange = {
-                            ingredientEdit = ingredientEdit?.copy(unit = it)
+                            siEdit = siEdit?.copy(siUnit = it)
                         },
                         confirmText = "Lưu",
                         onConfirm = {
                             coroutineScope.launch {
-                                shoppingViewModel.updateIngredient(
-                                    IngredientEntity(
-                                        ingredientId = ingredientEdit?.ingredientId,
-                                        ingredientName = ingredientEdit?.ingredientName ?: "",
-                                        weight = ingredientEdit?.weight ?: 0.0,
-                                        unit = ingredientEdit?.unit ?: ""
+                                shoppingViewModel.updateShoppingItem(
+                                    ShoppingItemEntity(
+                                        siId = siEditId ?: 0,
+                                        shoppingId = shoppingId,
+                                        siName = siEdit?.siName ?: "",
+                                        siWeight = siEdit?.siWeight ?: "",
+                                        siUnit = siEdit?.siUnit ?: "",
+                                        status = siEdit?.status ?: false
                                     )
                                 )
                                 refreshKey++
@@ -251,7 +236,7 @@ fun ShoppingScreen(
                         confirmText = "Xóa",
                         onConfirm = {
                             coroutineScope.launch {
-                                shoppingViewModel.deleteShoppingItemById(shoppingDeleteId ?: 0)
+                                shoppingViewModel.deleteShoppingItemById(siDeleteId ?: -1)
                             }
                             refreshKey++
                             isShowDeleteIngredient = false
@@ -313,24 +298,19 @@ fun ShoppingScreen(
                 confirmText = "Thêm",
                 onConfirm = {
                     val name = newIngredientName.trim()
-                    val weight = newIngredientWeight.trim().toDoubleOrNull()
+                    val weight = newIngredientWeight.trim()
                     val unit = newIngredientUnit.trim()
 
                     if (name.isBlank() || weight == null || unit.isBlank()) {
                         Toast.makeText(context, "Vui lòng nhập đầy đủ thông tin", Toast.LENGTH_SHORT).show()
                     } else {
                         coroutineScope.launch {
-                            val newIngredientId = shoppingViewModel.insertIngredient(
-                                IngredientEntity(
-                                    ingredientName = name,
-                                    weight = weight,
-                                    unit = unit
-                                )
-                            ).toInt()
                             shoppingViewModel.insertShoppingItem(
                                 ShoppingItemEntity(
                                     shoppingId = shoppingId,
-                                    ingredientId = newIngredientId,
+                                    siName = name,
+                                    siWeight = weight,
+                                    siUnit = unit,
                                     status = false
                                 )
                             )
@@ -344,14 +324,6 @@ fun ShoppingScreen(
                 }
             )
         }
-    }
-}
-
-fun formatWeight(weight: Double): String {
-    return if (weight == weight.toInt().toDouble()) {
-        weight.toInt().toString()
-    } else {
-        weight.toString()
     }
 }
 
