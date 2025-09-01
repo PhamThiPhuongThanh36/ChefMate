@@ -125,7 +125,7 @@ fun RecipeScreen(
             recipeViewModel.getStepsByRecipeId(recipeId)
                 .map { stepEntities ->
                     stepEntities.map { entity ->
-                        StepInput(1, entity.description)
+                        StepInput(entity.description)
                     }
                 }
         }.collectAsState(initial = emptyList())

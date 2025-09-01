@@ -1,6 +1,7 @@
 package com.example.chefmate.ui.recipe
 
 import android.net.Uri
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
@@ -22,6 +23,7 @@ import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -37,6 +39,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
@@ -55,6 +58,7 @@ import com.example.chefmate.model.IngredientInput
 import com.example.chefmate.model.StepInput
 import com.example.chefmate.viewmodel.RecipeViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -67,11 +71,11 @@ fun AddEditRecipeScreen(recipeId: Int, navController: NavController, recipeViewM
     var cookingTime by remember { mutableStateOf("") }
     var ration by remember { mutableStateOf("") }
     var selectedUnit by remember { mutableStateOf("Phút") }
-    val ingredients = remember {
+    var ingredients = remember {
         mutableStateListOf(IngredientInput("", "", ""))
     }
     val steps = remember {
-        mutableStateListOf(StepInput( 1, ""))
+        mutableStateListOf(StepInput( ""))
     }
     var imageUri by remember { mutableStateOf<Uri?>(null) }
     val launcher = rememberLauncherForActivityResult(
@@ -81,6 +85,25 @@ fun AddEditRecipeScreen(recipeId: Int, navController: NavController, recipeViewM
     }
 
     val context = LocalContext.current
+
+    LaunchedEffect(recipeId) {
+        val recipe = recipeViewModel.getRecipeById(recipeId).first()
+        recipe?.let {
+            recipeName = recipe.recipeName
+            imageUri = recipe.image.toUri()
+            cookingTime = recipe.cookingTime
+            ration = recipe.ration.toString()
+            selectedUnit = "Phút"
+        }
+        val ingredientEntities = recipeViewModel.getIngredientsByRecipeId(recipeId).first()
+        ingredients.clear()
+        ingredients.addAll(ingredientEntities.map { IngredientInput(it.ingredientName, it.weight.toString(), it.unit) })
+
+        val stepEntities = recipeViewModel.getStepsByRecipeId(recipeId).first()
+        steps.clear()
+        steps.addAll(stepEntities.map { StepInput(it.description) })
+    }
+    Log.d("Ingredients: ", ingredients.toString())
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -100,7 +123,7 @@ fun AddEditRecipeScreen(recipeId: Int, navController: NavController, recipeViewM
             onClickLeadingIcon = {
                 navController.popBackStack()
             },
-            title = "Thêm công thức"
+            title = if (recipeId == -1) "Thêm công thức" else "Cập nhật công thức"
         )
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -261,7 +284,7 @@ fun AddEditRecipeScreen(recipeId: Int, navController: NavController, recipeViewM
                     modifier = Modifier
                         .padding(top = 10.dp, bottom = 20.dp)
                         .clickable {
-                            steps.add(StepInput(steps.size + 1, ""))
+                            steps.add(StepInput(""))
                         }
                 ) {
                     Image(
@@ -277,28 +300,28 @@ fun AddEditRecipeScreen(recipeId: Int, navController: NavController, recipeViewM
                 }
             }
             CustomButton(
-                text = "Đăng công thức",
+                text = if (recipeId == -1) "Đăng công thức" else "Cập nhật công thức",
                 onClick = {
                     val currentDateTime = java.time.LocalDateTime.now().toString()
                     val savedImagePath = imageUri?.let { uri ->
                         saveImageToInternalStorage(context, uri)
                     }
                     coroutineScope.launch(Dispatchers.IO) {
-                        val newRecipe = RecipeEntity(
-                            userId = 1,
-                            recipeName = recipeName,
-                            image = savedImagePath.toString(),
-                            cookingTime = cookingTime,
-                            ration = ration.toInt(),
-                            viewCount = 0,
-                            likeQuantity = 0,
-                            createdAt = currentDateTime
-                        )
-                        val newRecipeId = recipeViewModel.insertRecipe(newRecipe)
-                        if (newRecipeId != -1L) {
+                        if (recipeId == -1) {
+                            val newRecipe = RecipeEntity(
+                                userId = 1,
+                                recipeName = recipeName,
+                                image = savedImagePath.toString(),
+                                cookingTime = cookingTime,
+                                ration = ration.toInt(),
+                                viewCount = 0,
+                                likeQuantity = 0,
+                                createdAt = currentDateTime
+                            )
+                            val newRecipeId = recipeViewModel.insertRecipe(newRecipe).toInt()
                             val ingredientEntities = ingredients.map { ingredientInput ->
                                 IngredientEntity(
-                                    recipeId = newRecipeId.toInt(),
+                                    recipeId = newRecipeId,
                                     ingredientName = ingredientInput.ingredientName,
                                     weight = ingredientInput.weight.toDouble(),
                                     unit = ingredientInput.unit
@@ -308,7 +331,41 @@ fun AddEditRecipeScreen(recipeId: Int, navController: NavController, recipeViewM
 
                             val stepEntities = steps.map { stepInput ->
                                 com.example.chefmate.database.entity.StepEntity(
-                                    recipeId = newRecipeId.toInt(),
+                                    recipeId = newRecipeId,
+                                    description = stepInput.description
+                                )
+                            }.filter { it.description.isNotBlank() }
+                            recipeViewModel.insertSteps(stepEntities)
+
+                            withContext(Dispatchers.Main) {
+                                navController.popBackStack()
+                            }
+                        } else {
+                            val newRecipe = RecipeEntity(
+                                recipeId = recipeId,
+                                userId = 1,
+                                recipeName = recipeName,
+                                image = savedImagePath.toString(),
+                                cookingTime = cookingTime,
+                                ration = ration.toInt(),
+                                viewCount = 0,
+                                likeQuantity = 0,
+                                createdAt = currentDateTime
+                            )
+                            recipeViewModel.updateRecipe(newRecipe)
+                            val ingredientEntities = ingredients.map { ingredientInput ->
+                                IngredientEntity(
+                                    recipeId = recipeId,
+                                    ingredientName = ingredientInput.ingredientName,
+                                    weight = ingredientInput.weight.toDouble(),
+                                    unit = ingredientInput.unit
+                                )
+                            }.filter { it.ingredientName.isNotBlank() }
+                            recipeViewModel.insertIngredients(ingredientEntities)
+
+                            val stepEntities = steps.map { stepInput ->
+                                com.example.chefmate.database.entity.StepEntity(
+                                    recipeId = recipeId,
                                     description = stepInput.description
                                 )
                             }.filter { it.description.isNotBlank() }

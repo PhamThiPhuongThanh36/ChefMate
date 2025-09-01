@@ -47,5 +47,11 @@ class RecipeViewModel @Inject constructor(private val repository: RecipeReposito
             repository.deleteRecipeById(recipeId)
         }
     }
+
+    suspend fun updateRecipe(recipe: RecipeEntity) {
+        viewModelScope.launch {
+            repository.updateRecipe(recipe)
+        }
+    }
 }
 
