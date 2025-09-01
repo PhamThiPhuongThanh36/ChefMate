@@ -15,7 +15,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -29,6 +32,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.chefmate.common.BigCard
+import com.example.chefmate.common.CustomAlertDialog
 import com.example.chefmate.common.Header
 import com.example.chefmate.database.entity.toRecipe
 import com.example.chefmate.viewmodel.RecipeViewModel
@@ -38,6 +42,8 @@ import kotlinx.coroutines.launch
 fun RecipeListScreen(navController: NavController, recipeViewModel: RecipeViewModel = hiltViewModel()) {
     val listRecipes by recipeViewModel.allRecipes.collectAsState(initial = emptyList())
     val coroutineScope = rememberCoroutineScope()
+    var isShowDialog by remember { mutableStateOf(false) }
+
     Column(
         modifier = Modifier
             .statusBarsPadding()
@@ -87,15 +93,29 @@ fun RecipeListScreen(navController: NavController, recipeViewModel: RecipeViewMo
                             modifier = Modifier
                                 .background(Color(0xFFFF0000), shape = RoundedCornerShape(3.dp))
                                 .clickable {
-                                    coroutineScope.launch {
-                                        listRecipes[index].recipeId?.let {
-                                            recipeViewModel.deleteRecipeById( it )
-                                        }
-                                    }
+                                    isShowDialog = true
                                 }
                         )
                     }
                 )
+                if (isShowDialog) {
+                    CustomAlertDialog(
+                        title = "Xóa công thức",
+                        content = "Bạn có chắc chắn muốn xóa công thức ${listRecipes[index].recipeName} không?",
+                        onDismiss = {
+                            isShowDialog = false
+                        },
+                        confirmText = "Xóa",
+                        onConfirm = {
+                            isShowDialog = false
+                            coroutineScope.launch {
+                                listRecipes[index].recipeId?.let {
+                                    recipeViewModel.deleteRecipeById( it )
+                                }
+                            }
+                        }
+                    )
+                }
             }
         }
     }
