@@ -34,6 +34,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.modifier.modifierLocalConsumer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -45,7 +46,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.chefmate.R
-import com.example.chefmate.common.AddIndredientEditText
+import com.example.chefmate.common.AddIngredientEditText
 import com.example.chefmate.common.CustomButton
 import com.example.chefmate.common.EditTextWithouthDescripe
 import com.example.chefmate.common.Header
@@ -71,9 +72,7 @@ fun AddEditRecipeScreen(recipeId: Int, navController: NavController, recipeViewM
     var cookingTime by remember { mutableStateOf("") }
     var ration by remember { mutableStateOf("") }
     var selectedUnit by remember { mutableStateOf("Phút") }
-    var ingredients = remember {
-        mutableStateListOf(IngredientInput("", "", ""))
-    }
+    val ingredients = remember { mutableStateListOf<IngredientEntity>() }
     val steps = remember {
         mutableStateListOf(StepInput( ""))
     }
@@ -97,7 +96,7 @@ fun AddEditRecipeScreen(recipeId: Int, navController: NavController, recipeViewM
         }
         val ingredientEntities = recipeViewModel.getIngredientsByRecipeId(recipeId).first()
         ingredients.clear()
-        ingredients.addAll(ingredientEntities.map { IngredientInput(it.ingredientName, it.weight.toString(), it.unit) })
+        ingredients.addAll(ingredientEntities)
 
         val stepEntities = recipeViewModel.getStepsByRecipeId(recipeId).first()
         steps.clear()
@@ -231,13 +230,29 @@ fun AddEditRecipeScreen(recipeId: Int, navController: NavController, recipeViewM
                     .padding(top = 10.dp)
             ) {
                 ingredients.forEachIndexed{ index, item ->
-                    AddIndredientEditText(
+                    AddIngredientEditText(
                         name = item.ingredientName,
                         onNameChange = { ingredients[index] = item.copy(ingredientName = it) },
                         quantity = item.weight,
                         onQuantityChange = { ingredients[index] = item.copy(weight = it) },
                         unit = item.unit,
-                        onUnitChange = { ingredients[index] = item.copy(unit = it) }
+                        deleteIngredient = {
+                            if (ingredients.size > 1) {
+                                Icon(
+                                    painter = painterResource(R.drawable.ic_minus),
+                                    contentDescription = "minus ingredient",
+                                    tint = Color(0xFFBF6A02),
+                                    modifier = Modifier
+                                        .padding(end = 20.dp)
+                                        .size(17.dp)
+                                        .clickable {
+                                            ingredients.removeAt(index)
+                                        }
+                                )
+                            } else { }
+                        },
+                        onUnitChange = { ingredients[index] = item.copy(unit = it) },
+                        modifier = Modifier
                     )
                 }
                 Row(
@@ -245,7 +260,7 @@ fun AddEditRecipeScreen(recipeId: Int, navController: NavController, recipeViewM
                     modifier = Modifier
                         .padding(top = 10.dp, bottom = 20.dp)
                         .clickable {
-                            ingredients.add(IngredientInput("", "", ""))
+                            ingredients.add(IngredientEntity(-1, -1, "", "", ""))
                         }
                 ) {
                     Image(
@@ -323,7 +338,7 @@ fun AddEditRecipeScreen(recipeId: Int, navController: NavController, recipeViewM
                                 IngredientEntity(
                                     recipeId = newRecipeId,
                                     ingredientName = ingredientInput.ingredientName,
-                                    weight = ingredientInput.weight.toDouble(),
+                                    weight = ingredientInput.weight,
                                     unit = ingredientInput.unit
                                 )
                             }.filter { it.ingredientName.isNotBlank() }
@@ -357,7 +372,7 @@ fun AddEditRecipeScreen(recipeId: Int, navController: NavController, recipeViewM
                                 IngredientEntity(
                                     recipeId = recipeId,
                                     ingredientName = ingredientInput.ingredientName,
-                                    weight = ingredientInput.weight.toDouble(),
+                                    weight = ingredientInput.weight,
                                     unit = ingredientInput.unit
                                 )
                             }.filter { it.ingredientName.isNotBlank() }
