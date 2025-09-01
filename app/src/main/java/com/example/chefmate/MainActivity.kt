@@ -77,7 +77,7 @@ fun NavGraph(activity: Activity, navController: NavController): NavGraph {
         }
         composable("shopping/{shoppingId}", arguments = listOf(navArgument("shoppingId") { type = NavType.IntType })) { backStackEntry ->
             val shoppingId = backStackEntry.arguments?.getInt("shoppingId") ?: -1 // Default -1 nếu null
-            ShoppingScreen(shoppingId = shoppingId, navController = navController)
+            ShoppingScreen(shoppingId = shoppingId,shoppingViewModel = hiltViewModel(), navController = navController)
         }
         composable("addShopping") {
             AddShoppingScreen(navController = navController, recipeViewModel = hiltViewModel(), shoppingViewModel = hiltViewModel())
