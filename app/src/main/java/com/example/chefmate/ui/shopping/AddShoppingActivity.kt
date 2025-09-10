@@ -56,6 +56,7 @@ import com.example.chefmate.database.entity.IngredientEntity
 import com.example.chefmate.database.entity.RecipeEntity
 import com.example.chefmate.database.entity.ShoppingEntity
 import com.example.chefmate.database.entity.ShoppingItemEntity
+import com.example.chefmate.helper.CommonHelper
 import com.example.chefmate.helper.DataStoreHelper
 import com.example.chefmate.model.IngredientInput
 import com.example.chefmate.ui.recipe.IngredientItem
@@ -265,32 +266,32 @@ fun AddShoppingScreen(
                             status = false
                         )
                     )
+                    val listIngredients = mutableListOf<ShoppingItemEntity>()
                     selectedRecipes.forEach { recipe ->
                         val listIngredientRecipe = recipe.recipeId?.let { shoppingViewModel.getIngredientsByRecipeId(it) }
                         listIngredientRecipe?.first()?.forEach { item ->
-                            shoppingViewModel.insertShoppingItem(
-                                ShoppingItemEntity(
-                                    shoppingId = shoppingId.toInt(),
+                            listIngredients.add(
+                                ShoppingItemEntity(shoppingId = shoppingId.toInt(),
                                     siName = item.ingredientName,
                                     siWeight = item.weight,
                                     siUnit = item.unit,
-                                    status = false
-                                )
+                                    status = false)
                             )
                         }
                     }
                     ingredients.forEach{ item ->
-                        shoppingViewModel.insertShoppingItem(
-                            ShoppingItemEntity(
-                                shoppingId = shoppingId.toInt(),
+                        listIngredients.add(
+                            ShoppingItemEntity(shoppingId = shoppingId.toInt(),
                                 siName = item.ingredientName,
                                 siWeight = item.weight,
                                 siUnit = item.unit,
-                                status = false
-                            )
+                                status = false)
                         )
                     }
+
+                    shoppingViewModel.insertShoppingItems(CommonHelper.consolidateIngredients(listIngredients))
                     DataStoreHelper.updateLastShopping(context, shoppingId.toInt())
+
                     navController.navigate("shopping/$shoppingId")
                 }
             },

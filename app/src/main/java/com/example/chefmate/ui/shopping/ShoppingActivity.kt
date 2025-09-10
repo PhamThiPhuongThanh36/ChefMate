@@ -305,15 +305,21 @@ fun ShoppingScreen(
                         Toast.makeText(context, "Vui lòng nhập đầy đủ thông tin", Toast.LENGTH_SHORT).show()
                     } else {
                         coroutineScope.launch {
-                            shoppingViewModel.insertShoppingItem(
-                                ShoppingItemEntity(
-                                    shoppingId = shoppingId,
-                                    siName = name,
-                                    siWeight = weight,
-                                    siUnit = unit,
-                                    status = false
-                                )
+                            val newShoppingItem = ShoppingItemEntity(
+                                shoppingId = shoppingId,
+                                siName = name,
+                                siWeight = weight,
+                                siUnit = unit,
+                                status = false
                             )
+                            val exitIngredient =  listShoppingItems.find { it.siName == name && it.siUnit == unit }
+                            if (exitIngredient != null) {
+                                val newWeight = exitIngredient.siWeight.toInt() + weight.toInt()
+                                shoppingViewModel.deleteShoppingItemById(exitIngredient.siId!!)
+                                shoppingViewModel.insertShoppingItem(exitIngredient.copy(siWeight = newWeight.toString()))
+                            } else {
+                                shoppingViewModel.insertShoppingItem(newShoppingItem)
+                            }
                             refreshKey++
                         }
                         newIngredientName = ""
