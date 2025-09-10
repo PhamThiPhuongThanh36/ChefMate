@@ -3,10 +3,12 @@ package com.example.chefmate.common
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -18,12 +20,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.constraintlayout.compose.ConstraintLayout
 import com.example.chefmate.R
+import com.example.chefmate.database.entity.TagEntity
 
 @Composable
 fun CustomDiaLogEditIngredient(
@@ -164,9 +169,106 @@ fun CustomAlertDialog(
     )
 }
 
+@Composable
+fun AddTagDialog(tag: String, onTagChange: (String) -> Unit ,onDismiss: () -> Unit, listTags: List<String>, onAddTag: () -> Unit) {
+    Dialog(
+        onDismissRequest = {},
+        content = {
+            ConstraintLayout(
+                modifier = Modifier
+                    .fillMaxWidth(0.9f)
+            ) {
+                val (contentRef, closeRef) = createRefs()
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth(0.85f)
+                        .background(Color(0xFFFFFFFF))
+                        .padding(20.dp)
+                        .constrainAs(contentRef) {
+                            top.linkTo(parent.top)
+                            start.linkTo(parent.start)
+                            end.linkTo(parent.end)
+                        }
+                ) {
+                    Text(
+                        text = "Thêm tag",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 14.sp
+                    )
+                    EditTextWithouthDescripe(
+                        value = tag,
+                        onValueChange = onTagChange,
+                        label = "Tên tag"
+                    )
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                    ) {
+                        if (listTags.isNotEmpty()) {
+                            listTags.forEach { tag ->
+                                Text(
+                                    text = tag,
+                                    modifier = Modifier
+                                        .padding(4.dp)
+                                        .background(Color(0xFFFFC107), shape = RoundedCornerShape(3.dp))
+                                        .padding(2.dp)
+
+                                )
+                            }
+                        } else {
+                            Text(
+                                text = "Chưa thêm tag nào",
+                                modifier = Modifier
+                                    .padding(top = 12.dp, bottom = 12.dp)
+                            )
+                        }
+                    }
+                    Button(
+                        onClick = onAddTag,
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFFF97518)
+                        ),
+                        shape = RoundedCornerShape(15.dp),
+                        modifier = Modifier
+                            .align(Alignment.End)
+                    ) {
+                        Text(
+                            text = "Thêm",
+                            fontSize = 14.sp,
+                        )
+                    }
+                }
+                Button(
+                    onClick = onDismiss,
+                    contentPadding = PaddingValues(0.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFFFFFFFF)
+                    ),
+                    modifier = Modifier
+                        .size(36.dp)
+                        .constrainAs(closeRef) {
+                            top.linkTo(contentRef.bottom, margin = 24.dp)
+                            start.linkTo(parent.start)
+                            end.linkTo(parent.end)
+                        }
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_close),
+                        contentDescription = "close dialog",
+                        tint = Color(0xFFF97518),
+                        modifier = Modifier
+                            .size(24.dp)
+                    )
+                }
+            }
+        }
+    )
+}
+
 @Preview
 @Composable
 fun DialogPreview() {
-    CustomDiaLogEditIngredient("",{}, "", {}, "", {}, "", {}, "", {})
+//    CustomDiaLogEditIngredient("",{}, "", {}, "", {}, "", {}, "", {})
 //    CustomAlertDialog(title = "Title", content = "Content", onDismiss = {}, confirmText = "Xóa", onConfirm = {})
+    AddTagDialog("", {}, {}, listOf(), {})
 }
