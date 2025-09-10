@@ -4,6 +4,7 @@ import android.net.Uri
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -12,12 +13,17 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CardElevation
 import androidx.compose.material3.Icon
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonDefaults
@@ -37,6 +43,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.modifier.modifierLocalConsumer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -47,6 +54,7 @@ import androidx.navigation.compose.rememberNavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.chefmate.R
 import com.example.chefmate.common.AddIngredientEditText
+import com.example.chefmate.common.AddTagDialog
 import com.example.chefmate.common.CustomButton
 import com.example.chefmate.common.EditTextWithouthDescripe
 import com.example.chefmate.common.Header
@@ -55,6 +63,7 @@ import com.example.chefmate.common.TimeDropdown
 import com.example.chefmate.common.saveImageToInternalStorage
 import com.example.chefmate.database.entity.IngredientEntity
 import com.example.chefmate.database.entity.RecipeEntity
+import com.example.chefmate.database.entity.TagEntity
 import com.example.chefmate.model.IngredientInput
 import com.example.chefmate.model.StepInput
 import com.example.chefmate.viewmodel.RecipeViewModel
@@ -68,7 +77,8 @@ import kotlinx.coroutines.withContext
 fun AddEditRecipeScreen(recipeId: Int, navController: NavController, recipeViewModel: RecipeViewModel = hiltViewModel()) {
     val coroutineScope = rememberCoroutineScope()
     var recipeName by remember { mutableStateOf("") }
-    var tags by remember { mutableStateOf("") }
+    var tag by remember { mutableStateOf("") }
+    var tags = remember { mutableStateListOf<String>() }
     var cookingTime by remember { mutableStateOf("") }
     var ration by remember { mutableStateOf("") }
     var selectedUnit by remember { mutableStateOf("Phút") }
@@ -76,6 +86,7 @@ fun AddEditRecipeScreen(recipeId: Int, navController: NavController, recipeViewM
     val steps = remember {
         mutableStateListOf(StepInput( ""))
     }
+    var isShowAddTags by remember { mutableStateOf(false) }
     var imageUri by remember { mutableStateOf<Uri?>(null) }
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
@@ -94,6 +105,10 @@ fun AddEditRecipeScreen(recipeId: Int, navController: NavController, recipeViewM
             ration = recipe.ration.toString()
             selectedUnit = "Phút"
         }
+        val tagEntities = recipeViewModel.getTagsByRecipeId(recipeId).first()
+        tags.clear()
+        tags.addAll(tagEntities.map { it.tagName })
+
         val ingredientEntities = recipeViewModel.getIngredientsByRecipeId(recipeId).first()
         ingredients.clear()
         ingredients.addAll(ingredientEntities)
@@ -148,13 +163,43 @@ fun AddEditRecipeScreen(recipeId: Int, navController: NavController, recipeViewM
                 modifier = Modifier
                     .fillMaxWidth(0.85f)
             )
-            EditTextWithouthDescripe(
-                value = tags,
-                onValueChange = { tags = it },
-                label = "Tags",
+            Card(
+                colors = CardDefaults.cardColors(
+                    containerColor = Color(0xFFFFFFFF)
+                ),
+                border = BorderStroke(1.dp, Color(0xFFA3A3A3)),
                 modifier = Modifier
                     .fillMaxWidth(0.85f)
-            )
+                    .padding(top = 15.dp)
+                    .height(56.dp)
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(start = 10.dp)
+                ) {
+                    Text(
+                        text = "Thêm tag",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 14.sp,
+                        color = Color(0xFFFF9800),
+                        modifier = Modifier
+                            .clickable {
+                                isShowAddTags = true
+                            }
+                    )
+                    tags.forEach { tag ->
+                        Text(
+                            text = tag,
+                            modifier = Modifier
+                                .padding(4.dp)
+                                .background(Color(0xFFFFC107), shape = RoundedCornerShape(3.dp))
+                                .padding(2.dp)
+                        )
+                    }
+                }
+            }
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
@@ -334,6 +379,15 @@ fun AddEditRecipeScreen(recipeId: Int, navController: NavController, recipeViewM
                                 createdAt = currentDateTime
                             )
                             val newRecipeId = recipeViewModel.insertRecipe(newRecipe).toInt()
+
+                            val tagEntities = tags.map { tag ->
+                                TagEntity(
+                                    recipeId = newRecipeId,
+                                    tagName = tag
+                                )
+                            }.filter { it.tagName.isNotBlank() }
+                            recipeViewModel.insertTags(tagEntities)
+
                             val ingredientEntities = ingredients.map { ingredientInput ->
                                 IngredientEntity(
                                     recipeId = newRecipeId,
@@ -394,6 +448,18 @@ fun AddEditRecipeScreen(recipeId: Int, navController: NavController, recipeViewM
                 },
                 modifier = Modifier
             )
+            if (isShowAddTags) {
+                AddTagDialog(
+                    tag = tag,
+                    onTagChange = { tag = it },
+                    onDismiss = { isShowAddTags = false },
+                    listTags = tags,
+                    onAddTag = {
+                        tags.add(tag)
+                        tag = ""
+                    }
+                )
+            }
         }
     }
 }
