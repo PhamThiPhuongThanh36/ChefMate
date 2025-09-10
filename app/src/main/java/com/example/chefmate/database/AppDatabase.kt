@@ -8,11 +8,13 @@ import com.example.chefmate.database.dao.IngredientDao
 import com.example.chefmate.database.dao.RecipeDao
 import com.example.chefmate.database.dao.ShoppingDao
 import com.example.chefmate.database.dao.StepDao
+import com.example.chefmate.database.dao.TagDao
 import com.example.chefmate.database.entity.IngredientEntity
 import com.example.chefmate.database.entity.RecipeEntity
 import com.example.chefmate.database.entity.ShoppingEntity
 import com.example.chefmate.database.entity.ShoppingItemEntity
 import com.example.chefmate.database.entity.StepEntity
+import com.example.chefmate.database.entity.TagEntity
 
 @Database(
     entities = [
@@ -20,7 +22,8 @@ import com.example.chefmate.database.entity.StepEntity
         IngredientEntity::class,
         ShoppingEntity::class,
         ShoppingItemEntity::class,
-        StepEntity::class
+        StepEntity::class,
+        TagEntity::class,
     ],
     version = 1,
     exportSchema = false
@@ -31,6 +34,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun ingredientDao(): IngredientDao
     abstract fun stepDao(): StepDao
     abstract fun shoppingDao(): ShoppingDao
+    abstract fun tagDao(): TagDao
 
     companion object {
         @Volatile

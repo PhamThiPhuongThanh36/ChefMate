@@ -7,6 +7,7 @@ import com.example.chefmate.database.dao.IngredientDao
 import com.example.chefmate.database.dao.RecipeDao
 import com.example.chefmate.database.dao.ShoppingDao
 import com.example.chefmate.database.dao.StepDao
+import com.example.chefmate.database.dao.TagDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -42,4 +43,8 @@ object DatabaseModule {
     @Singleton
     @Provides
     fun provideShoppingDao(db: AppDatabase): ShoppingDao = db.shoppingDao()
+
+    @Singleton
+    @Provides
+    fun provideTagDao(db: AppDatabase): TagDao = db.tagDao()
 }
