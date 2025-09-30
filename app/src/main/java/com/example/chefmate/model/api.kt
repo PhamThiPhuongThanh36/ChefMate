@@ -25,21 +25,8 @@ data class IngredientItem(
     val unit: String,
 )
 
-data class CookingStep(
-    val indexStep: Int? = null,
-    val stepContent: String,
-)
-
 data class CookingStepAddRecipeData(
     val content: String,
-)
-
-data class CommentItem(
-    val commentId: Int,
-    val userId: Int,
-    val userName: String,
-    val content: String,
-    val createdAt: String,
 )
 
 data class RegisterRequest(
@@ -52,19 +39,6 @@ data class RegisterRequest(
 data class LoginRequest(
     val identifier: String,
     val password: String
-)
-
-data class UpdateUserInformationRequest(
-    val userId: Int,
-    val fullName: String,
-    val phone: String,
-    val email: String
-)
-
-data class ChangePasswordRequest(
-    val phone: String,
-    val currentPassword: String,
-    val newPassword: String
 )
 
 data class LoginResponse(
@@ -89,72 +63,3 @@ data class CreateRecipeResponse(
     val data: Int? = null,
     val message: String? = null
 )
-
-data class SearchRecipeRequest(
-    val recipeName: String,
-    val userId: Int? = null
-)
-
-data class SearchRecipeByTagRequest(
-    val tagName: String,
-    val userId: Int? = null
-)
-
-data class UserIDRequest(
-    val userId: Int? = null
-)
-
-data class RecipeListResponse(
-    val success: Boolean,
-    val data: List<Recipe>? = null,
-    val message: String? = null
-)
-
-data class AllIngredientsResponse(
-    val success: Boolean,
-    val data: List<IngredientEntity>? = null,
-    val message: String? = null
-)
-
-data class AllTagsResponse(
-    val success: Boolean,
-    val data: List<TagEntity>? = null,
-    val message: String? = null
-)
-
-data class LikeRequest(
-    val userId: Int,
-    val recipeId: Int
-)
-
-data class CommentRequest(
-    val userId: Int,
-    val recipeId: Int,
-    val content: String
-)
-
-data class IncreaseRequest(
-    val recipeId: Int
-)
-
-data class InteractionResponse(
-    val success: Boolean,
-    val data: InteractionData? = null,
-    val message: String? = null
-)
-
-data class InteractionData(
-    val count: Int,
-    val comments: List<CommentItem>? = null
-)
-
-enum class SearchType(val value: String) {
-    NAME("name"),
-    TAG("tag")
-}
-
-enum class ShoppingStatus (val value: String) {
-    WAITING("waiting"),
-    BOUGHT("bought"),
-    COULD_NOT_BUY("couldNotBuy")
-}
