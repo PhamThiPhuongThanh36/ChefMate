@@ -42,10 +42,10 @@ import androidx.navigation.compose.rememberNavController
 import com.example.chefmate.R
 import com.example.chefmate.common.CustomAlertDialog
 import com.example.chefmate.common.CustomDiaLogEditIngredient
+import com.example.chefmate.common.Header
 import com.example.chefmate.database.entity.IngredientEntity
 import com.example.chefmate.database.entity.ShoppingItemEntity
 import com.example.chefmate.helper.DataStoreHelper
-import com.example.chefmate.ui.homescreen.Header
 import com.example.chefmate.viewmodel.ShoppingViewModel
 import kotlinx.coroutines.launch
 
@@ -131,7 +131,6 @@ fun ShoppingScreen(
                                     checked = listShoppingItems[index].status,
                                     onCheckedChange = { newStatus ->
                                         coroutineScope.launch {
-                                            // Cập nhật DB
                                             val siId = listShoppingItems[index].siId
                                             if (siId != null) {
                                                 shoppingViewModel.updateStatusShoppingItem(newStatus, siId)
