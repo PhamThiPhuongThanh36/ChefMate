@@ -13,18 +13,25 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.example.chefmate.R
-import com.example.chefmate.common.*
+import com.example.chefmate.api.ApiClient
+import com.example.chefmate.viewmodel.UserViewModel
+import kotlinx.coroutines.launch
 
 @Composable
-fun SignUpScreen() {
+fun SignUpScreen(userViewModel: UserViewModel, navController: NavController) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -37,7 +44,8 @@ fun SignUpScreen() {
         var confirmpw by remember { mutableStateOf("") }
         var isHidePassword by remember { mutableStateOf(true) }
         var isHideConfirmPassword by remember { mutableStateOf(true) }
-
+        val coroutine = rememberCoroutineScope()
+        val context = LocalContext.current
         Title("Đăng ký", "Chào mừng đến với ChefMate")
         Column(
             modifier = Modifier
@@ -61,7 +69,25 @@ fun SignUpScreen() {
                 trailingIcon = { IconButton(onClick = {isHideConfirmPassword = !isHideConfirmPassword}, modifier = Modifier.padding(end = 20.dp).size(28.dp)) { Icon( if(isHideConfirmPassword) painterResource(R.drawable.ic_eye_close) else painterResource(R.drawable.ic_eye_open), contentDescription = null) }}
             )
             CustomButton("Đăng ký",
-                onClick = {},
+                onClick = {
+                    coroutine.launch {
+                        val response = ApiClient.register(
+                            name,
+                            phone,
+                            email,
+                            password
+                        )
+                        if (response != null) {
+                            if (response.data != null) {
+                                userViewModel.saveLoginState(
+                                    context,
+                                    userData = response.data
+                                )
+                                navController.navigate("mainAct")
+                            }
+                        }
+                    }
+                },
                 modifier = Modifier
                     .padding(top = 20.dp)
                     .align(Alignment.CenterHorizontally)
@@ -73,5 +99,5 @@ fun SignUpScreen() {
 @Preview
 @Composable
 fun SignInScreenPreview() {
-    SignUpScreen()
+    SignUpScreen(userViewModel = hiltViewModel(), rememberNavController() )
 }
