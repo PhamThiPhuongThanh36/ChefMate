@@ -11,7 +11,7 @@ import com.example.chefmate.database.entity.TagEntity
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
-class RecipeRepository @Inject constructor(
+class   RecipeRepository @Inject constructor(
     private val recipeDao: RecipeDao,
     private val ingredientDao: IngredientDao,
     private val stepDao: StepDao,
@@ -61,11 +61,21 @@ class RecipeRepository @Inject constructor(
         return tagDao.insertTags(tagRecipes)
     }
 
-//    suspend fun insertTag(tag: TagEntity): Long {
-//        return tagDao.insertTag(tag)
-//    }
+    fun deleteTagsByRecipeId(recipeId: Int) {
+        return tagDao.deleteTagsByRecipeId(recipeId)
+    }
 
-//    suspend fun updateTagRecipes(tags: List<TagRecipeEntity>) {
-//        return tagDao.updateTagRecipes(tags)
-//    }
+    suspend fun deleteIngredientsByRecipeId(recipeId: Int) {
+        return ingredientDao.deleteIngredientById(recipeId)
+    }
+
+    suspend fun deleteStepsByRecipeId(recipeId: Int) {
+        return stepDao.deleteStepsByRecipeId(recipeId)
+
+    }
+
+    fun searchRecipes(query: String): Flow<List<RecipeEntity>> {
+        return recipeDao.searchRecipes(query)
+    }
+
 }
