@@ -149,7 +149,6 @@ fun RecipeScreen(
                 )
             },
             onClickSave = {
-                // Handle save button click
             },
             trailingIcon = {
                 Icon(
@@ -159,7 +158,6 @@ fun RecipeScreen(
                 )
             },
             onClickTrailingIcon = {
-                // Handle share button click
             }
 
         )
@@ -437,6 +435,7 @@ fun RecipeScreenPreview() {
         3,
         3,
         4,
+        false,
         "",
         "Thanh",
         "https://helios-i.mashable.com/imagery/articles/040MMJLdogUu9t7WB5h2Vbv/hero-image.fill.size_1248x702.v1740075757.jpg",
