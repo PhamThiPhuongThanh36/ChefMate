@@ -14,12 +14,8 @@ import javax.inject.Inject
 @HiltViewModel
 class ShoppingViewModel @Inject constructor(private val repository: ShoppingRepository) : ViewModel() {
 
-
-    val allShoppingLists = repository.getAllShoppingLists()
-
     fun getShoppingItemsById(shoppingId: Int) = repository.getShoppingItemsById(shoppingId)
 
-    fun getIngredientById(ingredientId: Int) = repository.getIngredientById(ingredientId)
     fun getIngredientsByRecipeId(recipeId: Int) = repository.getIngredientsByRecipeId(recipeId)
 
     suspend fun insertShoppingList(shoppingList: ShoppingEntity): Long {
