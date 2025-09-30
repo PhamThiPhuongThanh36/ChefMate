@@ -10,16 +10,13 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface TagDao {
-//    @Insert(onConflict = OnConflictStrategy.REPLACE)
-//    suspend fun insertTag(tag: TagEntity): Long
-
     @Query("SELECT * FROM Tags WHERE recipeId = :recipeId")
     fun getTagsByRecipeId(recipeId: Int): Flow<List<TagEntity>>
 
-//    @Update(onConflict = OnConflictStrategy.REPLACE)
-//    suspend fun updateTagRecipes(tags: List<TagEntity>)
-
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertTags(tags: List<TagEntity>)
+
+    @Query("DELETE FROM Tags WHERE recipeId = :recipeId")
+    fun deleteTagsByRecipeId(recipeId: Int)
 
 }

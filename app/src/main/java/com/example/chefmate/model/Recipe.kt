@@ -9,6 +9,7 @@ data class Recipe(
     val ration: Int,
     val viewCount: Int,
     val likeQuantity: Int,
+    val isPublic: Boolean,
     val createdAt: String,
     val userName: String,
     val userImage: String,

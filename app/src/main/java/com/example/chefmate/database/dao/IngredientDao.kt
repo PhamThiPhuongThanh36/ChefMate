@@ -24,4 +24,8 @@ interface IngredientDao {
 
     @Query("Select * from Ingredients where ingredientId = :ingredientId")
     fun getIngredientById(ingredientId: Int): Flow<IngredientEntity>
+
+    @Query("Delete from Ingredients where recipeId = :recipeId")
+    suspend fun deleteIngredientById(recipeId: Int)
+
 }

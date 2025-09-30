@@ -27,4 +27,7 @@ interface RecipeDao {
     @Query("SELECT * FROM Recipes WHERE recipeId = :recipeId")
     fun getRecipeById(recipeId: Int): Flow<RecipeEntity?>
 
+    @Query("SELECT * FROM Recipes WHERE recipeName LIKE '%' || :query || '%'")
+    fun searchRecipes(query: String): Flow<List<RecipeEntity>>
+
 }

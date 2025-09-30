@@ -15,4 +15,6 @@ interface StepDao {
     @Query("SELECT * FROM Steps WHERE recipeId = :recipeId")
     fun getStepsByRecipeId(recipeId: Int): Flow<List<StepEntity>>
 
+    @Query("DELETE FROM Steps WHERE recipeId = :recipeId")
+    suspend fun deleteStepsByRecipeId(recipeId: Int)
 }

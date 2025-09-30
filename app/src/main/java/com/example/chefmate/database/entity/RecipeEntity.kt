@@ -15,13 +15,13 @@ data class RecipeEntity(
     val ration: Int,
     val viewCount: Int,
     val likeQuantity: Int,
+    val isPublic: Boolean,
     val createdAt: String,
 )
 
-// Hàm mở rộng để chuyển đổi RecipeEntity sang Recipe
 fun RecipeEntity.toRecipe(): Recipe {
     return Recipe(
-        recipeId = this.recipeId, // Map recipeId từ Entity sang id của Model
+        recipeId = this.recipeId,
         userId = this.userId,
         recipeName = this.recipeName,
         image = this.image,
@@ -29,6 +29,7 @@ fun RecipeEntity.toRecipe(): Recipe {
         ration = this.ration,
         viewCount = this.viewCount,
         likeQuantity = this.likeQuantity,
+        isPublic = this.isPublic,
         createdAt = this.createdAt,
         userName = "",
         userImage = "",
