@@ -75,6 +75,7 @@ fun CustomEditText(label: String,content: String, onValueChange: (String) -> Uni
     TextField(
         value = content,
         onValueChange = onValueChange,
+        maxLines = 1,
         placeholder = {
             Text(
                 text = placeholder,

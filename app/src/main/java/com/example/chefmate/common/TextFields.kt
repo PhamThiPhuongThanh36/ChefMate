@@ -15,6 +15,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardColors
 import androidx.compose.material3.CardDefaults
@@ -51,8 +53,6 @@ fun SearchBar(
     onValueChange: (String) -> Unit,
     placeholder: String,
     modifier: Modifier = Modifier,
-    trailingIcons: @Composable (() -> Unit)? = null,
-    onTrailingIconClick: (() -> Unit)? = null,
 ) {
     Card(
         colors = CardDefaults.cardColors(
@@ -94,47 +94,6 @@ fun SearchBar(
                 .fillMaxWidth(0.85f)
         )
     }
-}
-
-@Composable
-fun CustomEditText(
-    label: String,
-    content: String,
-    onValueChange: (String) -> Unit,
-    placeholder: String,
-    trailingIcon: @Composable (() -> Unit)? = null,
-) {
-    Text(
-        text = label,
-        fontSize = 18.sp,
-        fontWeight = FontWeight(600),
-        modifier = Modifier
-            .padding(start = 55.dp, end = 40.dp, top = 30.dp)
-    )
-    TextField(
-        value = content,
-        onValueChange = onValueChange,
-        singleLine = true,
-        placeholder = {
-            Text(
-                text = placeholder,
-                color = Color(0xFF737373)
-            )
-        },
-        trailingIcon = trailingIcon,
-        colors = TextFieldDefaults.colors(
-            focusedTextColor = Color(0xFF000000),
-            unfocusedTextColor = Color(0xFF000000),
-            focusedContainerColor = Color(0xFFFFFFFF),
-            unfocusedContainerColor = Color(0xFFFFFFFF),
-            focusedIndicatorColor = Color.Transparent,
-            unfocusedIndicatorColor = Color.Transparent
-        ),
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(start = 40.dp, end = 40.dp, top = 10.dp, bottom = 10.dp)
-            .shadow(10.dp, RoundedCornerShape(50.dp)),
-    )
 }
 
 @Composable
@@ -290,100 +249,6 @@ fun EditTextWithPlaceholder(value: String, onValueChange: (String) -> Unit, plac
                 unfocusedIndicatorColor = Color.Transparent
             ),
         )
-    }
-}
-
-@Composable
-fun AddIngredientEditText(
-    name: String,
-    onNameChange: (String) -> Unit,
-    quantity: String,
-    onQuantityChange: (String) -> Unit,
-    unit: String,
-    onUnitChange: (String) -> Unit,
-    deleteIngredient: @Composable (() -> Unit)? = null,
-    modifier: Modifier = Modifier,
-) {
-    Card(
-        colors = CardDefaults.cardColors(
-            containerColor = Color(0xFFFFFFFF),
-        ),
-        modifier = modifier
-            .padding(3.dp)
-            .border(1.dp, Color(0xFFA3A3A3), RoundedCornerShape(10.dp))
-//            .padding(end = 20.dp)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-            ) {
-                TextField(
-                    value = name,
-                    onValueChange = onNameChange,
-                    singleLine = true,
-                    label = {
-                        Text(text = "Tên nguyên liệu")
-                    },
-                    colors = TextFieldDefaults.colors(
-                        focusedContainerColor = Color(0xFFFFFFFF),
-                        unfocusedContainerColor = Color(0xFFFFFFFF),
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent
-                    ),
-                    modifier = Modifier
-                )
-                Spacer(modifier = Modifier.weight(1f))
-                deleteIngredient?.invoke()
-            }
-            HorizontalDivider(
-                modifier = Modifier
-                    .fillMaxWidth(0.9f)
-                    .align(Alignment.CenterHorizontally)
-            )
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-            ) {
-                TextField(
-                    value = quantity,
-                    onValueChange = onQuantityChange,
-                    label = {
-                        Text(text = "Khối lượng")
-                    },
-                    singleLine = true,
-                    colors = TextFieldDefaults.colors(
-                        focusedContainerColor = Color(0xFFFFFFFF),
-                        unfocusedContainerColor = Color(0xFFFFFFFF),
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent
-                    ),
-                    modifier = Modifier
-                        .weight(1f)
-                )
-                TextField(
-                    value = unit,
-                    onValueChange = onUnitChange,
-                    singleLine = true,
-                    colors = TextFieldDefaults.colors(
-                        focusedContainerColor = Color(0xFFFFFFFF),
-                        unfocusedContainerColor = Color(0xFFFFFFFF),
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent
-                    ),
-                    label = {
-                        Text(
-                            text = "Đơn vị"
-                        )
-                    },
-                    modifier = Modifier
-                        .weight(1f)
-                )
-            }
-        }
     }
 }
 

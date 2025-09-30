@@ -81,37 +81,3 @@ fun Header(
         }
     }
 }
-
-@Composable
-fun Title(h1: String, h2: String) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(
-                brush = Brush.linearGradient(
-                    colors = listOf(
-                        Color( 0xFFF97316),
-                        Color(0xFFFA872F),
-                        Color(0xFFFDBA74)
-                    )
-                ),
-                shape = RoundedCornerShape(bottomEnd = 100.dp)
-            )
-    ) {
-        Text(
-            text = h1,
-            color = Color(0xFFFFFFFF),
-            fontSize = 32.sp,
-            fontWeight = FontWeight(600),
-            modifier = Modifier
-                .padding(top = 90.dp, start = 40.dp)
-        )
-        Text(
-            text = h2,
-            color = Color(0xFFFFFFFF),
-            fontSize = 18.sp,
-            modifier = Modifier
-                .padding(top = 20.dp, start = 40.dp, bottom = 30.dp)
-        )
-    }
-}

@@ -8,18 +8,25 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.focusModifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -28,6 +35,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.constraintlayout.compose.ConstraintLayout
 import coil.compose.rememberAsyncImagePainter
 import com.example.chefmate.R
 import com.example.chefmate.model.Recipe
@@ -96,7 +105,7 @@ fun BigCard(recipe: Recipe, onClick: () -> Unit, modifier: Modifier = Modifier, 
                     if (recipe.image.startsWith("/")) {
                         Uri.fromFile(File(recipe.image))
                     } else {
-                    recipe.image // Đây có thể là URL ảnh từ internet
+                    recipe.image
                 }),
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
@@ -175,21 +184,115 @@ fun BigCard(recipe: Recipe, onClick: () -> Unit, modifier: Modifier = Modifier, 
     }
 }
 
+@Composable
+fun EvaluatedCard(onDismiss: () -> Unit, onConfirm: () -> Unit) {
+    var numberStar = remember { mutableStateOf(0) }
+    Dialog(
+        onDismissRequest = {},
+        content = {
+            ConstraintLayout(
+                modifier = Modifier
+                    .fillMaxWidth(0.95f)
+            ) {
+                val (starRef, contentRef) = createRefs()
+                Column(
+                    modifier = Modifier
+                        .background(Color(0xFFFFFFFF), shape = RoundedCornerShape(12.dp))
+                        .fillMaxWidth()
+                        .height(200.dp)
+                        .constrainAs(contentRef) {
+                            start.linkTo(parent.start)
+                            top.linkTo(starRef.bottom, margin = -20.dp)
+                            end.linkTo(parent.end)
+                        }
+                ) {
+                    Text(
+                        text = "Đánh giá",
+                        textAlign = TextAlign.Center,
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 30.dp, bottom = 30.dp)
+                    )
+                    Row(
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = 60.dp, end = 60.dp, bottom = 30.dp)
+                    ) {
+                        for (i in 1..5) {
+                            Icon(
+                                painter = painterResource(R.drawable.ic_full_star),
+                                contentDescription = "star",
+                                tint = if (i <= numberStar.value) Color(0xFFFFEB3B) else Color(
+                                    0xFF9F9F9F
+                                ),
+                                modifier = Modifier
+                                    .size(25.dp)
+                                    .clickable {
+                                        numberStar.value = i
+                                    }
+                            )
+                        }
+                    }
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = 50.dp, end = 50.dp)
+                    ) {
+                        Text(
+                            text = "Đánh giá",
+                            color = Color(0xFF424242),
+                            fontSize = 15.sp,
+                            modifier = Modifier
+                                .clickable {
+                                    onConfirm()
+                                }
+                        )
+                        Spacer(modifier = Modifier.weight(1f))
+                        Text(
+                            text = "Có lẽ để sau",
+                            color = Color(0xFF424242),
+                            fontSize = 15.sp,
+                            modifier = Modifier
+                                .clickable {
+                                    onDismiss()
+                                }
+                        )
+                    }
+                    HorizontalDivider(
+                        thickness = 1.dp,
+                        color = Color(0xFF606060),
+                        modifier = Modifier
+                            .padding(top = 10.dp, start = 30.dp, end = 30.dp)
+                    )
+                }
+                Icon(
+                    painter = painterResource(R.drawable.ic_full_star),
+                    contentDescription = "star image",
+                    tint = Color(0xFFFFEB3B),
+                    modifier = Modifier
+                        .size(50.dp)
+                        .constrainAs(starRef) {
+                            start.linkTo(parent.start)
+                            top.linkTo(parent.top)
+                            end.linkTo(parent.end)
+                        }
+                )
+            }
+        }
+    )
+}
+
 @Preview
 @Composable
 fun CardPreview() {
-    val recipe =  Recipe(
-        recipeId = 1,
-        userId = 1,
-        recipeName = "Cơm sườn",
-        image = "https://wibu.com.vn/wp-content/uploads/2025/07/Akaza-thanh-guom-diet-quy-rotated.jpg",
-        cookingTime = "",
-        ration = 2,
-        viewCount = 1,
-        likeQuantity = 1,
-        createdAt = "",
-        userName = "Ptpt2004",
-        userImage = "",
-        isLiked = true
-    )
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.White)
+    ) {
+        EvaluatedCard({}, {})
+    }
 }
