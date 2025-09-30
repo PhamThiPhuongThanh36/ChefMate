@@ -16,6 +16,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -26,12 +27,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.chefmate.R
 import com.example.chefmate.model.Recipe
 import com.example.chefmate.common.*
+import com.example.chefmate.viewmodel.RecipeViewModel
+import kotlinx.coroutines.flow.map
 
 @Composable
-fun HomeScreen() {
+fun HomeScreen(recipeViewModel: RecipeViewModel) {
     val lazyListState = rememberLazyListState()
     val isShowPopular by remember { derivedStateOf { lazyListState.firstVisibleItemScrollOffset == 0 } }
     Log.d("HomeScreen", "isShowPopular: $isShowPopular")
@@ -42,6 +46,23 @@ fun HomeScreen() {
             .fillMaxSize()
             .background(Color(0xFFFFFFFF))
     ) {
+        val recipes = recipeViewModel.allRecipes.map {
+            it.map { recipeEntity ->
+                Recipe(
+                    recipeId = recipeEntity.recipeId,
+                    recipeName = recipeEntity.recipeName,
+                    image = recipeEntity.image,
+                    cookingTime = recipeEntity.cookingTime,
+                    ration = recipeEntity.ration,
+                    viewCount = recipeEntity.viewCount,
+                    likeQuantity = recipeEntity.likeQuantity,
+                    isPublic = false,
+                    createdAt = "",
+                    userName = "",
+                    userImage = ""
+                )
+            }
+        }.collectAsState(initial = emptyList())
         var searchText by remember { mutableStateOf("") }
         val tagsList = listOf("đồ uống", "salad", "nước chấm", "món chính", "món súp", "món chay")
         val imgsList = listOf(R.drawable.lau, R.drawable.lauhaisan, R.drawable.matcha, R.drawable.matchayoguruto, R.drawable.misoshiru, R.drawable.misopoteto)
@@ -86,51 +107,6 @@ fun HomeScreen() {
             modifier = Modifier
                 .padding(start = 40.dp, top = 20.dp)
         )
-
-        val recipe1 = Recipe(
-            1,
-            1,
-            "Sườn xào",
-            "https://cdn.tgdd.vn/2021/10/CookDish/cach-lam-nuoc-mam-tac-avt-1200x676.jpg",
-            "2",
-            3,
-            3,
-            4,
-            "",
-            "Thanh",
-            "",
-            false
-        )
-
-        val recipe2 = Recipe(
-            1,
-            1,
-            "Sườn xào",
-            "https://cdn.tgdd.vn/2021/10/CookDish/cach-lam-nuoc-mam-tac-avt-1200x676.jpg",
-            "2",
-            3,
-            3,
-            4,
-            "",
-            "Thanh",
-            "",
-            false
-        )
-        val recipe3 = Recipe(
-            1,
-            1,
-            "Sườn xào",
-            "https://cdn.tgdd.vn/2021/10/CookDish/cach-lam-nuoc-mam-tac-avt-1200x676.jpg",
-            "2",
-            3,
-            3,
-            4,
-            "",
-            "Thanh",
-            "",
-            false
-        )
-        val listRecipes = listOf(recipe1, recipe2, recipe3)
         LazyColumn(
             state = lazyListState,
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -138,9 +114,9 @@ fun HomeScreen() {
                 .fillMaxWidth()
                 .background(Color(0xFFFFFFFF))
         ) {
-            items(listRecipes.size) { index ->
+            items(recipes.value.size) { index ->
                 BigCard(
-                    listRecipes[index],
+                    recipe = recipes.value[index],
                     onClick = {},
                     modifier = Modifier
                         .fillMaxWidth(0.9f),
@@ -153,5 +129,5 @@ fun HomeScreen() {
 @Preview
 @Composable
 fun HomeScreenPreview() {
-    HomeScreen()
+    HomeScreen(hiltViewModel())
 }
