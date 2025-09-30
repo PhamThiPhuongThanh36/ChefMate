@@ -79,7 +79,7 @@ fun AddShoppingScreen(
             .statusBarsPadding()
     ) {
         var searchInput by remember { mutableStateOf("") }
-        val recipes = recipeViewModel.allRecipes.collectAsState(initial = emptyList())
+        val recipes = recipeViewModel.searchRecipes(searchInput).collectAsState(emptyList())
         var selectedRecipes by remember { mutableStateOf<List<RecipeEntity>>(emptyList()) }
         var ingredientName by remember { mutableStateOf("") }
         var ingredientWeight by remember { mutableStateOf("") }
@@ -104,12 +104,6 @@ fun AddShoppingScreen(
             content = searchInput,
             onValueChange = { searchInput = it },
             placeholder = "Tìm công thức đã lưu",
-            trailingIcons = {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_search),
-                    contentDescription = "Search recipe"
-                )
-            },
             modifier = Modifier
                 .align(Alignment.CenterHorizontally)
         )
@@ -263,7 +257,8 @@ fun AddShoppingScreen(
                 coroutineScope.launch {
                     val shoppingId = shoppingViewModel.insertShoppingList(
                         ShoppingEntity(
-                            status = false
+                            status = false,
+                            createdAt = CommonHelper.getCurrentDate()
                         )
                     )
                     val listIngredients = mutableListOf<ShoppingItemEntity>()
