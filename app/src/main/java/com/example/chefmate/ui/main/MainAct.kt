@@ -1,5 +1,6 @@
 package com.example.chefmate.ui.main
 
+import android.annotation.SuppressLint
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
@@ -24,7 +25,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -43,17 +43,18 @@ import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import com.example.chefmate.R
 import com.example.chefmate.helper.DataStoreHelper
 import com.example.chefmate.ui.account.AccountScreen
 import com.example.chefmate.ui.recipe.RecipeListScreen
 import com.example.chefmate.viewmodel.RecipeViewModel
 import com.example.chefmate.viewmodel.ShoppingViewModel
+import com.example.chefmate.viewmodel.UserViewModel
 import kotlinx.coroutines.launch
 
+@SuppressLint("ViewModelConstructorInComposable")
 @Composable
-fun MainAct(navController: NavController, shoppingViewModel: ShoppingViewModel = hiltViewModel()) {
+fun MainAct(navController: NavController) {
     val paperState = rememberPagerState (
         initialPage = 0,
         pageCount = { 3 }
@@ -77,19 +78,20 @@ fun MainAct(navController: NavController, shoppingViewModel: ShoppingViewModel =
                 state = paperState,
                 userScrollEnabled = false
             ) { page ->
+                val recipeViewModel: RecipeViewModel = hiltViewModel()
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
                 ) {
                     when (page) {
                         0 -> {
-                            HomeScreen()
+                            HomeScreen(recipeViewModel)
                         }
                         1 -> {
                             RecipeListScreen(navController)
                         }
                         2 -> {
-                            AccountScreen()
+                            AccountScreen(userViewModel = UserViewModel(), recipeViewModel, navController)
                         }
                     }
                 }
