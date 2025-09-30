@@ -1,5 +1,6 @@
 package com.example.chefmate.ui.account
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -24,12 +25,19 @@ import androidx.compose.material3.Label
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.focusModifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -38,11 +46,18 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.example.chefmate.R
+import com.example.chefmate.common.EvaluatedCard
 import com.example.chefmate.common.ItemSetting
+import com.example.chefmate.helper.DataStoreHelper
+import com.example.chefmate.viewmodel.RecipeViewModel
+import com.example.chefmate.viewmodel.UserViewModel
 
 @Composable
-fun AccountScreen() {
+fun AccountScreen(userViewModel: UserViewModel, recipeViewModel: RecipeViewModel, navController: NavController) {
     Column(
         modifier = Modifier
             .statusBarsPadding()
@@ -56,6 +71,16 @@ fun AccountScreen() {
                 )
             )
     ) {
+        val context = LocalContext.current
+        var isShowRating by remember { mutableStateOf(false) }
+        val recipeSize = recipeViewModel.allRecipes.collectAsState(emptyList()).value.size
+
+        LaunchedEffect(Unit) {
+            userViewModel.isLoggedIn(context)
+            userViewModel.getUserData(context)
+        }
+        val isLoggedIn = userViewModel.isLoggedIn.collectAsState().value
+        val user = userViewModel.user.collectAsState().value
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
@@ -79,7 +104,11 @@ fun AccountScreen() {
                 Icon(
                     painter = painterResource(R.drawable.ic_logout),
                     tint = Color(0xFFFFFFFF),
-                    contentDescription = null
+                    contentDescription = null,
+                    modifier = Modifier
+                        .clickable {
+                            userViewModel.logout(context)
+                        }
                 )
             }
         }
@@ -88,165 +117,183 @@ fun AccountScreen() {
                 containerColor = Color(0xFFFFFFFF)
             ),
             modifier = Modifier
-                .height(150.dp)
+                .height(160.dp)
                 .fillMaxWidth(0.8f)
                 .align(Alignment.CenterHorizontally)
         ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier
-                    .fillMaxWidth()
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
+            if (isLoggedIn) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier
-                        .fillMaxWidth(0.9f)
-                        .align(Alignment.CenterHorizontally)
+                        .fillMaxWidth()
                 ) {
-                    Card(
-                        shape = CircleShape,
-                        elevation = CardDefaults.cardElevation(
-                            defaultElevation = 5.dp
-                        ),
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
-                            .padding(top = 8.dp, bottom = 8.dp)
+                            .fillMaxWidth(0.9f)
+                            .align(Alignment.CenterHorizontally)
+                            .padding(top = 5.dp)
                     ) {
-                        Image(
-                            painter = painterResource(R.drawable.thanhxinh),
-                            contentDescription = null,
-                            contentScale = ContentScale.Crop,
+                        Card(
+                            shape = CircleShape,
+                            elevation = CardDefaults.cardElevation(
+                                defaultElevation = 5.dp
+                            ),
                             modifier = Modifier
-                                .size(70.dp)
-                        )
-                    }
-                    Column {
-                        Row {
-                            Text(
-                                text = "Phương Thanh",
-                                fontSize = 18.sp,
-                                fontWeight = FontWeight.Bold,
+                                .padding(top = 8.dp, bottom = 8.dp)
+                        ) {
+                            Image(
+                                painter = painterResource(R.drawable.thanhxinh),
+                                contentDescription = null,
+                                contentScale = ContentScale.Crop,
                                 modifier = Modifier
-                                    .padding(start = 10.dp)
+                                    .size(70.dp)
                             )
-                            Spacer(modifier = Modifier.weight(1f))
+                        }
+                        Column {
+                            Row {
+                                Text(
+                                    text = user?.fullName ?: "No data",
+                                    fontSize = 18.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier
+                                        .padding(start = 10.dp)
+                                )
+                                Spacer(modifier = Modifier.weight(1f))
+                                Row(
+                                    modifier = Modifier
+                                        .clickable {  }
+                                ) {
+                                    Icon(
+                                        painter = painterResource(R.drawable.ic_edit),
+                                        contentDescription = null,
+                                        tint = Color(0xFF2E8D8C),
+                                        modifier = Modifier
+                                            .size(16.dp)
+                                    )
+                                    Text(
+                                        text = "Sửa",
+                                        fontSize = 14.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color(0xFF2E8D8C)
+                                    )
+                                }
+                            }
                             Row(
+                                verticalAlignment = Alignment.CenterVertically,
                                 modifier = Modifier
-                                    .clickable {  }
+                                    .padding(start = 10.dp, top = 5.dp, bottom = 5.dp)
                             ) {
                                 Icon(
-                                    painter = painterResource(R.drawable.ic_edit),
+                                    painter = painterResource(R.drawable.ic_phone),
                                     contentDescription = null,
-                                    tint = Color(0xFF2E8D8C),
+                                    tint = Color(0xFF5A5A60),
                                     modifier = Modifier
                                         .size(16.dp)
                                 )
                                 Text(
-                                    text = "Sửa",
-                                    fontSize = 14.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color(0xFF2E8D8C)
+                                    text = user?.phone ?: "No data",
+                                    fontSize = 12.sp,
+                                    color = Color(0xFF5A5A60),
+                                    modifier = Modifier
+                                        .padding(start = 3.dp)
+                                )
+                            }
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier
+                                    .padding(start = 10.dp)
+                            ) {
+                                Icon(
+                                    painter = painterResource(R.drawable.ic_email),
+                                    contentDescription = null,
+                                    tint = Color(0xFF5A5A60),
+                                    modifier = Modifier
+                                        .size(16.dp)
+                                )
+                                Text(
+                                    text = user?.email ?: "No data",
+                                    fontSize = 12.sp,
+                                    color = Color(0xFF5A5A60),
+                                    modifier = Modifier
+                                        .padding(start = 3.dp)
                                 )
                             }
                         }
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier
-                                .padding(start = 10.dp, top = 5.dp, bottom = 5.dp)
-                        ) {
-                            Icon(
-                                painter = painterResource(R.drawable.ic_phone),
-                                contentDescription = null,
-                                tint = Color(0xFF5A5A60),
-                                modifier = Modifier
-                                    .size(16.dp)
-                            )
-                            Text(
-                                text = "0845408835",
-                                fontSize = 12.sp,
-                                color = Color(0xFF5A5A60)
-                            )
-                        }
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier
-                                .padding(start = 10.dp)
-                        ) {
-                            Icon(
-                                painter = painterResource(R.drawable.ic_email),
-                                contentDescription = null,
-                                tint = Color(0xFF5A5A60),
-                                modifier = Modifier
-                                    .size(16.dp)
-                            )
-                            Text(
-                                text = "ptpthanh@gmail.com",
-                                fontSize = 12.sp,
-                                color = Color(0xFF5A5A60)
-                            )
-                        }
                     }
                 }
-            }
-            Card(
-                colors = CardDefaults.cardColors(
-                    containerColor = Color(0xFFE1E1E3)
-                ),
-                modifier = Modifier
-                    .height(60.dp)
-                    .fillMaxWidth(0.9f)
-                    .align(Alignment.CenterHorizontally)
-                    .padding(bottom = 5.dp)
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
+                Card(
+                    colors = CardDefaults.cardColors(
+                        containerColor = Color(0xFFE1E1E3)
+                    ),
                     modifier = Modifier
-                        .fillMaxSize()
-                        .padding(start = 10.dp)
+                        .height(60.dp)
+                        .fillMaxWidth(0.9f)
+                        .align(Alignment.CenterHorizontally)
+                        .padding(bottom = 5.dp)
                 ) {
-                    Box(
-                        contentAlignment = Alignment.Center,
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
-                            .padding(end = 20.dp)
-                            .size(40.dp)
-                            .background(Color(0xFFD7EDED), shape = CircleShape)
-                            .border(1.dp, shape = CircleShape, color = Color(0xFFFFFFFF))
+                            .fillMaxSize()
+                            .padding(start = 10.dp)
                     ) {
-                        Icon(
-                            painter = painterResource(R.drawable.ic_recipe_book),
-                            contentDescription = null,
-                            tint = Color.Unspecified,
+                        Box(
+                            contentAlignment = Alignment.Center,
                             modifier = Modifier
-                                .size(22.dp)
-                        )
-                    }
-                    Column {
-                        Text(
-                            buildAnnotatedString {
-                                withStyle(style = SpanStyle(fontSize = 12.sp)) {
-                                    append("Bạn đã đăng ")
-                                }
-                                withStyle(style = SpanStyle(fontSize = 12.sp, fontWeight = FontWeight.Bold)) {
-                                    append("2 công thức")
-                                }
-                            }
-                        )
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
+                                .padding(end = 20.dp)
+                                .size(40.dp)
+                                .background(Color(0xFFD7EDED), shape = CircleShape)
+                                .border(1.dp, shape = CircleShape, color = Color(0xFFFFFFFF))
                         ) {
-                            Text(
-                                text = "Xem công thức đã đăng",
-                                fontWeight = FontWeight.Bold,
-                                color = Color(0xFF2E8D8C),
-                                fontSize = 12.sp
-                            )
                             Icon(
-                                painter = painterResource(R.drawable.ic_next),
-                                tint = Color(0xFF2E8D8C),
-                                contentDescription = null
+                                painter = painterResource(R.drawable.ic_recipe_book),
+                                contentDescription = null,
+                                tint = Color.Unspecified,
+                                modifier = Modifier
+                                    .size(22.dp)
                             )
+                        }
+                        Column {
+                            Text(
+                                buildAnnotatedString {
+                                    withStyle(style = SpanStyle(fontSize = 12.sp)) {
+                                        append("Bạn đã đăng ")
+                                    }
+                                    withStyle(style = SpanStyle(fontSize = 12.sp, fontWeight = FontWeight.Bold)) {
+                                        append("$recipeSize công thức")
+                                    }
+                                }
+                            )
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Text(
+                                    text = "Xem công thức đã đăng",
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFF2E8D8C),
+                                    fontSize = 12.sp
+                                )
+                                Icon(
+                                    painter = painterResource(R.drawable.ic_next),
+                                    tint = Color(0xFF2E8D8C),
+                                    contentDescription = null
+                                )
+                            }
                         }
                     }
                 }
+            } else {
+                Text(
+                    text = "Mời đăng nhập",
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight(600),
+                    modifier = Modifier
+                        .align(Alignment.CenterHorizontally)
+                        .clickable {
+                            navController.navigate("signIn")
+                        }
+                )
             }
         }
         Card(
@@ -293,17 +340,28 @@ fun AccountScreen() {
                         )
                         ItemSetting(
                             icon = R.drawable.ic_star,
-                            content = "Đánh giá"
+                            content = "Đánh giá",
+                            modifier = Modifier
+                                .clickable {
+                                    isShowRating = true
+                                }
                         )
                     }
                 }
             }
         }
+        if (isShowRating) {
+            EvaluatedCard(
+                onDismiss = { isShowRating = false },
+                onConfirm = { isShowRating = false }
+            )
+        }
     }
 }
 
+@SuppressLint("ViewModelConstructorInComposable")
 @Preview
 @Composable
 fun AccountScreenPreview() {
-    AccountScreen()
+    AccountScreen(userViewModel = UserViewModel(), hiltViewModel(), rememberNavController())
 }
