@@ -1,5 +1,6 @@
 package com.example.chefmate.ui.recipe
 
+import android.content.Intent
 import android.net.Uri
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -7,6 +8,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -20,14 +22,18 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CardElevation
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -38,12 +44,16 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.modifier.modifierLocalConsumer
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -53,19 +63,23 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.chefmate.R
-import com.example.chefmate.common.AddIngredientEditText
+import com.example.chefmate.api.ApiClient
 import com.example.chefmate.common.AddTagDialog
+import com.example.chefmate.common.CircularLoading
 import com.example.chefmate.common.CustomButton
 import com.example.chefmate.common.EditTextWithouthDescripe
 import com.example.chefmate.common.Header
 import com.example.chefmate.common.Label
 import com.example.chefmate.common.TimeDropdown
-import com.example.chefmate.common.saveImageToInternalStorage
 import com.example.chefmate.database.entity.IngredientEntity
 import com.example.chefmate.database.entity.RecipeEntity
 import com.example.chefmate.database.entity.TagEntity
-import com.example.chefmate.model.IngredientInput
+import com.example.chefmate.helper.DataStoreHelper
+import com.example.chefmate.model.CookingStepAddRecipeData
+import com.example.chefmate.model.CreateRecipeData
+import com.example.chefmate.model.IngredientItem
 import com.example.chefmate.model.StepInput
+import com.example.chefmate.model.TagData
 import com.example.chefmate.viewmodel.RecipeViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
@@ -76,6 +90,9 @@ import kotlinx.coroutines.withContext
 @Composable
 fun AddEditRecipeScreen(recipeId: Int, navController: NavController, recipeViewModel: RecipeViewModel = hiltViewModel()) {
     val coroutineScope = rememberCoroutineScope()
+    val context = LocalContext.current
+    var isLoading by remember { mutableStateOf(false) }
+
     var recipeName by remember { mutableStateOf("") }
     var tag by remember { mutableStateOf("") }
     var tags = remember { mutableStateListOf<String>() }
@@ -86,15 +103,32 @@ fun AddEditRecipeScreen(recipeId: Int, navController: NavController, recipeViewM
     val steps = remember {
         mutableStateListOf(StepInput( ""))
     }
+    var isPublic by remember { mutableStateOf(false) }
     var isShowAddTags by remember { mutableStateOf(false) }
     var imageUri by remember { mutableStateOf<Uri?>(null) }
-    val launcher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent()
-    ) { uri: Uri? ->
-        imageUri = uri
-    }
 
-    val context = LocalContext.current
+    val focusManager = LocalFocusManager.current
+    val ingredientFocusRequesters = remember { mutableStateListOf<FocusRequester>() }
+
+    LaunchedEffect(ingredients.size, steps.size) {
+        while (ingredientFocusRequesters.size < ingredients.size * 3) {
+            ingredientFocusRequesters.add(FocusRequester())
+        }
+        while (ingredientFocusRequesters.size > ingredients.size * 3) {
+            ingredientFocusRequesters.removeAt(ingredientFocusRequesters.size - 1)
+        }
+    }
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocument()
+    ) { uri: Uri? ->
+        uri?.let {
+            imageUri = it
+            context.contentResolver.takePersistableUriPermission(
+                it,
+                Intent.FLAG_GRANT_READ_URI_PERMISSION
+            )
+        }
+    }
 
     LaunchedEffect(recipeId) {
         val recipe = recipeViewModel.getRecipeById(recipeId).first()
@@ -105,6 +139,9 @@ fun AddEditRecipeScreen(recipeId: Int, navController: NavController, recipeViewM
             ration = recipe.ration.toString()
             selectedUnit = "Phút"
         }
+
+        isPublic = recipe?.isPublic ?: false
+
         val tagEntities = recipeViewModel.getTagsByRecipeId(recipeId).first()
         tags.clear()
         tags.addAll(tagEntities.map { it.tagName })
@@ -152,16 +189,7 @@ fun AddEditRecipeScreen(recipeId: Int, navController: NavController, recipeViewM
                 contentScale = if (imageUri == null) ContentScale.Fit else ContentScale.Crop,
                 modifier = Modifier
                     .size(276.dp, 184.dp)
-                    .clickable {
-                        launcher.launch("image/*")
-                    }
-            )
-            EditTextWithouthDescripe(
-                value = recipeName,
-                onValueChange = { recipeName = it },
-                label = "Tên công thức",
-                modifier = Modifier
-                    .fillMaxWidth(0.85f)
+                    .clickable { launcher.launch(arrayOf("image/*")) }
             )
             Card(
                 colors = CardDefaults.cardColors(
@@ -200,6 +228,13 @@ fun AddEditRecipeScreen(recipeId: Int, navController: NavController, recipeViewM
                     }
                 }
             }
+            EditTextWithouthDescripe(
+                value = recipeName,
+                onValueChange = { recipeName = it },
+                label = "Tên công thức",
+                modifier = Modifier
+                    .fillMaxWidth(0.85f)
+            )
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
@@ -237,7 +272,10 @@ fun AddEditRecipeScreen(recipeId: Int, navController: NavController, recipeViewM
             }
 
             val options = listOf("Riêng tư", "Công khai")
-            val (selectedOption, onOptionSelected) = remember { mutableStateOf(options[0]) }
+            val selectedOption = if (isPublic) remember { mutableStateOf(options[1]) } else remember { mutableStateOf(options[0]) }
+            LaunchedEffect(selectedOption.value) {
+                isPublic = selectedOption.value == options[1]
+            }
             Row(
                 modifier = Modifier
                     .fillMaxWidth(0.85f)
@@ -249,12 +287,12 @@ fun AddEditRecipeScreen(recipeId: Int, navController: NavController, recipeViewM
                             .weight(1f)
                     ) {
                         RadioButton(
-                            selected = (option == selectedOption),
+                            selected = (option == selectedOption.value),
                             colors = RadioButtonDefaults.colors(
                                 selectedColor = Color(0xFFF97518),
                                 unselectedColor = Color(0xFFF97518)
                             ),
-                            onClick = { onOptionSelected(option) }
+                            onClick = { selectedOption.value = option }
                         )
                         Text(
                             text = option,
@@ -263,6 +301,7 @@ fun AddEditRecipeScreen(recipeId: Int, navController: NavController, recipeViewM
                     }
                 }
             }
+
             Row(
                 modifier = Modifier
                     .fillMaxWidth(0.83f)
@@ -275,30 +314,139 @@ fun AddEditRecipeScreen(recipeId: Int, navController: NavController, recipeViewM
                     .padding(top = 10.dp)
             ) {
                 ingredients.forEachIndexed{ index, item ->
-                    AddIngredientEditText(
-                        name = item.ingredientName,
-                        onNameChange = { ingredients[index] = item.copy(ingredientName = it) },
-                        quantity = item.weight,
-                        onQuantityChange = { ingredients[index] = item.copy(weight = it) },
-                        unit = item.unit,
-                        deleteIngredient = {
-                            if (ingredients.size > 1) {
-                                Icon(
-                                    painter = painterResource(R.drawable.ic_minus),
-                                    contentDescription = "minus ingredient",
-                                    tint = Color(0xFFBF6A02),
-                                    modifier = Modifier
-                                        .padding(end = 20.dp)
-                                        .size(17.dp)
-                                        .clickable {
-                                            ingredients.removeAt(index)
-                                        }
-                                )
-                            } else { }
-                        },
-                        onUnitChange = { ingredients[index] = item.copy(unit = it) },
+                    val nameIndex = index * 3
+                    val weightIndex = index * 3 + 1
+                    val unitIndex = index * 3 + 2
+                    Card(
+                        colors = CardDefaults.cardColors(
+                            containerColor = Color(0xFFFFFFFF),
+                        ),
                         modifier = Modifier
-                    )
+                            .padding(3.dp)
+                            .border(1.dp, Color(0xFFA3A3A3), RoundedCornerShape(10.dp))
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier
+                            ) {
+                                TextField(
+                                    value = item.ingredientName,
+                                    onValueChange = { ingredients[index] = item.copy(ingredientName = it) },
+                                    singleLine = true,
+                                    label = {
+                                        Text(text = "Tên nguyên liệu")
+                                    },
+                                    keyboardOptions = KeyboardOptions(
+                                        imeAction = ImeAction.Next
+                                    ),
+                                    keyboardActions = KeyboardActions(
+                                        onNext = {
+                                            ingredientFocusRequesters[weightIndex].requestFocus()
+                                        }
+                                    ),
+                                    colors = TextFieldDefaults.colors(
+                                        focusedContainerColor = Color(0xFFFFFFFF),
+                                        unfocusedContainerColor = Color(0xFFFFFFFF),
+                                        focusedIndicatorColor = Color.Transparent,
+                                        unfocusedIndicatorColor = Color.Transparent
+                                    ),
+                                    modifier = Modifier
+                                        .focusRequester(
+                                            ingredientFocusRequesters.getOrNull(
+                                                nameIndex
+                                            ) ?: FocusRequester()
+                                        )
+                                        .weight(1f)
+                                )
+                                if (ingredients.size > 1) {
+                                    Icon(
+                                        painter = painterResource(R.drawable.ic_close),
+                                        contentDescription = null,
+                                        tint = Color(0xFFFF9800),
+                                        modifier = Modifier
+                                            .padding(end = 10.dp)
+                                            .size(24.dp)
+                                            .clickable {
+                                                ingredients.removeAt(index)
+                                            }
+                                    )
+                                }
+                            }
+                            HorizontalDivider(
+                                modifier = Modifier
+                                    .fillMaxWidth(0.9f)
+                                    .align(Alignment.CenterHorizontally)
+                            )
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                            ) {
+                                TextField(
+                                    value = item.weight,
+                                    onValueChange = { ingredients[index] = item.copy(weight = it) },
+                                    label = {
+                                        Text(text = "Khối lượng")
+                                    },
+                                    singleLine = true,
+                                    colors = TextFieldDefaults.colors(
+                                        focusedContainerColor = Color(0xFFFFFFFF),
+                                        unfocusedContainerColor = Color(0xFFFFFFFF),
+                                        focusedIndicatorColor = Color.Transparent,
+                                        unfocusedIndicatorColor = Color.Transparent
+                                    ),
+                                    keyboardOptions = KeyboardOptions(
+                                        keyboardType = KeyboardType.Number,
+                                        imeAction = ImeAction.Next
+                                    ),
+                                    keyboardActions = KeyboardActions(
+                                        onNext = {
+                                            ingredientFocusRequesters.getOrNull(unitIndex)?.requestFocus()
+                                        }
+                                    ),
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .focusRequester(
+                                            ingredientFocusRequesters.getOrNull(
+                                                weightIndex
+                                            ) ?: FocusRequester()
+                                        )
+                                )
+                                TextField(
+                                    value = item.unit,
+                                    onValueChange = { ingredients[index] = item.copy(unit = it) },
+                                    singleLine = true,
+                                    colors = TextFieldDefaults.colors(
+                                        focusedContainerColor = Color(0xFFFFFFFF),
+                                        unfocusedContainerColor = Color(0xFFFFFFFF),
+                                        focusedIndicatorColor = Color.Transparent,
+                                        unfocusedIndicatorColor = Color.Transparent
+                                    ),
+                                    keyboardOptions = KeyboardOptions(
+                                        imeAction = ImeAction.Next
+                                    ),
+                                    keyboardActions = KeyboardActions(
+                                        onDone = { focusManager.clearFocus() }
+                                    ),
+                                    label = {
+                                        Text(
+                                            text = "Đơn vị"
+                                        )
+                                    },
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .focusRequester(
+                                            ingredientFocusRequesters.getOrNull(
+                                                unitIndex
+                                            ) ?: FocusRequester()
+                                        )
+                                )
+                            }
+                        }
+                    }
                 }
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -322,7 +470,7 @@ fun AddEditRecipeScreen(recipeId: Int, navController: NavController, recipeViewM
             }
             Row(
                 modifier = Modifier
-                    .fillMaxWidth(0.83f)
+                    .fillMaxWidth(0.9f)
             ) {
                 Label("Các bước nấu")
             }
@@ -331,13 +479,32 @@ fun AddEditRecipeScreen(recipeId: Int, navController: NavController, recipeViewM
                     .fillMaxWidth(0.85f)
             ) {
                 steps.forEachIndexed { index, item ->
-                    EditTextWithouthDescripe(
-                        value = item.description,
-                        onValueChange = { steps[index] = item.copy(description = it) },
-                        label = "Bước ${index + 1}",
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
                             .fillMaxWidth()
-                    )
+                    ) {
+                        EditTextWithouthDescripe(
+                            value = item.description,
+                            onValueChange = { steps[index] = item.copy(description = it) },
+                            label = "Bước ${index + 1}",
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(end = 10.dp)
+                        )
+                        if (steps.size > 1) {
+                            Icon(
+                                painter = painterResource(R.drawable.ic_close),
+                                contentDescription = null,
+                                tint = Color(0xFFFF9800),
+                                modifier = Modifier
+                                    .size(24.dp)
+                                    .clickable {
+                                        steps.removeAt(index)
+                                    }
+                            )
+                        }
+                    }
                 }
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -363,62 +530,138 @@ fun AddEditRecipeScreen(recipeId: Int, navController: NavController, recipeViewM
                 text = if (recipeId == -1) "Đăng công thức" else "Cập nhật công thức",
                 onClick = {
                     val currentDateTime = java.time.LocalDateTime.now().toString()
-                    val savedImagePath = imageUri?.let { uri ->
-                        saveImageToInternalStorage(context, uri)
-                    }
                     coroutineScope.launch(Dispatchers.IO) {
+                        val userId = DataStoreHelper.getUserData(context).userId
+                        isLoading = true
                         if (recipeId == -1) {
-                            val newRecipe = RecipeEntity(
-                                userId = 1,
-                                recipeName = recipeName,
-                                image = savedImagePath.toString(),
-                                cookingTime = cookingTime,
-                                ration = ration.toInt(),
-                                viewCount = 0,
-                                likeQuantity = 0,
-                                createdAt = currentDateTime
-                            )
-                            val newRecipeId = recipeViewModel.insertRecipe(newRecipe).toInt()
-
-                            val tagEntities = tags.map { tag ->
-                                TagEntity(
-                                    recipeId = newRecipeId,
-                                    tagName = tag
+                            if (isPublic == false) {
+                                val newRecipe = RecipeEntity(
+                                    userId = userId,
+                                    recipeName = recipeName,
+                                    image = imageUri.toString(),
+                                    cookingTime = cookingTime,
+                                    ration = ration.toInt(),
+                                    viewCount = 0,
+                                    likeQuantity = 0,
+                                    isPublic = if (selectedOption.value == "Riêng tư") false else true,
+                                    createdAt = currentDateTime
                                 )
-                            }.filter { it.tagName.isNotBlank() }
-                            recipeViewModel.insertTags(tagEntities)
+                                val newRecipeId = recipeViewModel.insertRecipe(newRecipe).toInt()
 
-                            val ingredientEntities = ingredients.map { ingredientInput ->
-                                IngredientEntity(
-                                    recipeId = newRecipeId,
-                                    ingredientName = ingredientInput.ingredientName,
-                                    weight = ingredientInput.weight,
-                                    unit = ingredientInput.unit
+                                val tagEntities = tags.map { tag ->
+                                    TagEntity(
+                                        recipeId = newRecipeId,
+                                        tagName = tag
+                                    )
+                                }.filter { it.tagName.isNotBlank() }
+                                recipeViewModel.insertTags(tagEntities)
+
+                                val ingredientEntities = ingredients.map { ingredientInput ->
+                                    IngredientEntity(
+                                        recipeId = newRecipeId,
+                                        ingredientName = ingredientInput.ingredientName,
+                                        weight = ingredientInput.weight,
+                                        unit = ingredientInput.unit
+                                    )
+                                }.filter { it.ingredientName.isNotBlank() }
+                                recipeViewModel.insertIngredients(ingredientEntities)
+
+                                val stepEntities = steps.map { stepInput ->
+                                    com.example.chefmate.database.entity.StepEntity(
+                                        recipeId = newRecipeId,
+                                        description = stepInput.description
+                                    )
+                                }.filter { it.description.isNotBlank() }
+                                recipeViewModel.insertSteps(stepEntities)
+
+                                withContext(Dispatchers.Main) {
+                                    navController.popBackStack()
+                                }
+                            } else {
+                                val listIngredients = ingredients.map {
+                                    IngredientItem(
+                                        it.ingredientId,
+                                        it.ingredientName,
+                                        it.weight.toInt(),
+                                        it.unit
+                                    )
+                                }
+                                val listSteps = steps.map {
+                                    CookingStepAddRecipeData(it.description)
+                                }
+                                val listTags = tags.map { TagData(it) }
+                                val recipe = CreateRecipeData(
+                                    recipeName,
+                                    cookingTime,
+                                    ration.toInt(),
+                                    listIngredients,
+                                    listSteps,
+                                    userId,
+                                    imageUri.toString(),
+                                    listTags,
                                 )
-                            }.filter { it.ingredientName.isNotBlank() }
-                            recipeViewModel.insertIngredients(ingredientEntities)
-
-                            val stepEntities = steps.map { stepInput ->
-                                com.example.chefmate.database.entity.StepEntity(
-                                    recipeId = newRecipeId,
-                                    description = stepInput.description
+                                val response = ApiClient.createRecipe(
+                                    context = context,
+                                    recipe = recipe
                                 )
-                            }.filter { it.description.isNotBlank() }
-                            recipeViewModel.insertSteps(stepEntities)
+                                if (response != null) {
+                                    if (response.success) {
+                                        val newRecipe = RecipeEntity(
+                                            userId = userId,
+                                            recipeName = recipeName,
+                                            image = imageUri.toString(),
+                                            cookingTime = cookingTime,
+                                            ration = ration.toInt(),
+                                            viewCount = 0,
+                                            likeQuantity = 0,
+                                            isPublic = if (selectedOption.value == "Riêng tư") false else true,
+                                            createdAt = currentDateTime
+                                        )
+                                        val newRecipeId = recipeViewModel.insertRecipe(newRecipe).toInt()
 
-                            withContext(Dispatchers.Main) {
-                                navController.popBackStack()
+                                        val tagEntities = tags.map { tag ->
+                                            TagEntity(
+                                                recipeId = newRecipeId,
+                                                tagName = tag
+                                            )
+                                        }.filter { it.tagName.isNotBlank() }
+                                        recipeViewModel.insertTags(tagEntities)
+
+                                        val ingredientEntities = ingredients.map { ingredientInput ->
+                                            IngredientEntity(
+                                                recipeId = newRecipeId,
+                                                ingredientName = ingredientInput.ingredientName,
+                                                weight = ingredientInput.weight,
+                                                unit = ingredientInput.unit
+                                            )
+                                        }.filter { it.ingredientName.isNotBlank() }
+                                        recipeViewModel.insertIngredients(ingredientEntities)
+
+                                        val stepEntities = steps.map { stepInput ->
+                                            com.example.chefmate.database.entity.StepEntity(
+                                                recipeId = newRecipeId,
+                                                description = stepInput.description
+                                            )
+                                        }.filter { it.description.isNotBlank() }
+                                        recipeViewModel.insertSteps(stepEntities)
+
+                                        withContext(Dispatchers.Main) {
+                                            navController.popBackStack()
+                                        }
+                                    }
+                                }
                             }
                         } else {
                             val newRecipe = RecipeEntity(
                                 recipeId = recipeId,
                                 userId = 1,
                                 recipeName = recipeName,
-                                image = savedImagePath.toString(),
+                                image = imageUri.toString(),
                                 cookingTime = cookingTime,
                                 ration = ration.toInt(),
                                 viewCount = 0,
                                 likeQuantity = 0,
+                                isPublic = if (selectedOption.value == "Riêng tư") false else true,
                                 createdAt = currentDateTime
                             )
                             recipeViewModel.updateRecipe(newRecipe)
@@ -430,6 +673,7 @@ fun AddEditRecipeScreen(recipeId: Int, navController: NavController, recipeViewM
                                     unit = ingredientInput.unit
                                 )
                             }.filter { it.ingredientName.isNotBlank() }
+                            recipeViewModel.deleteIngredientsByRecipeId(recipeId)
                             recipeViewModel.insertIngredients(ingredientEntities)
 
                             val stepEntities = steps.map { stepInput ->
@@ -438,13 +682,24 @@ fun AddEditRecipeScreen(recipeId: Int, navController: NavController, recipeViewM
                                     description = stepInput.description
                                 )
                             }.filter { it.description.isNotBlank() }
+                            recipeViewModel.deleteStepsByRecipeId(recipeId)
                             recipeViewModel.insertSteps(stepEntities)
+
+                            val tagEntities = tags.map { tag ->
+                                TagEntity(
+                                    recipeId = recipeId,
+                                    tagName = tag
+                                )
+                            }
+                            recipeViewModel.deleteTagsByRecipeId(recipeId)
+                            recipeViewModel.insertTags(tagEntities)
 
                             withContext(Dispatchers.Main) {
                                 navController.popBackStack()
                             }
                         }
                     }
+                    isLoading = false
                 },
                 modifier = Modifier
             )
@@ -459,6 +714,9 @@ fun AddEditRecipeScreen(recipeId: Int, navController: NavController, recipeViewM
                         tag = ""
                     }
                 )
+            }
+            if (isLoading) {
+                CircularLoading()
             }
         }
     }
