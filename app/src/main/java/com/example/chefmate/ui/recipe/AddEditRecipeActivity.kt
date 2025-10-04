@@ -64,6 +64,8 @@ import androidx.navigation.compose.rememberNavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.chefmate.R
 import com.example.chefmate.api.ApiClient
+import com.example.chefmate.api.ApiConstant
+import com.example.chefmate.api.createRecipeRetrofit
 import com.example.chefmate.common.AddTagDialog
 import com.example.chefmate.common.CircularLoading
 import com.example.chefmate.common.CustomButton
@@ -106,6 +108,8 @@ fun AddEditRecipeScreen(recipeId: Int, navController: NavController, recipeViewM
     var isPublic by remember { mutableStateOf(false) }
     var isShowAddTags by remember { mutableStateOf(false) }
     var imageUri by remember { mutableStateOf<Uri?>(null) }
+
+    val api = ApiClient.createService(ApiConstant.MAIN_URL)
 
     val focusManager = LocalFocusManager.current
     val ingredientFocusRequesters = remember { mutableStateListOf<FocusRequester>() }
@@ -600,9 +604,10 @@ fun AddEditRecipeScreen(recipeId: Int, navController: NavController, recipeViewM
                                     imageUri.toString(),
                                     listTags,
                                 )
-                                val response = ApiClient.createRecipe(
+                                val response = createRecipeRetrofit(
                                     context = context,
-                                    recipe = recipe
+                                    recipe = recipe,
+                                    api = api
                                 )
                                 if (response != null) {
                                     if (response.success) {
