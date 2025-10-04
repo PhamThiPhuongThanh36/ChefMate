@@ -3,13 +3,20 @@ package com.example.chefmate.viewmodel
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.chefmate.api.ApiClient
+import com.example.chefmate.api.ApiConstant
 import com.example.chefmate.helper.DataStoreHelper
+import com.example.chefmate.model.LoginRequest
+import com.example.chefmate.model.LoginResponse
+import com.example.chefmate.model.RegisterRequest
 import com.example.chefmate.model.UserData
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 class UserViewModel : ViewModel() {
+    val api = ApiClient.createService(ApiConstant.MAIN_URL)
+
     private val _isLoggedIn = MutableStateFlow(false)
     val isLoggedIn: StateFlow<Boolean> = _isLoggedIn
 
@@ -55,4 +62,13 @@ class UserViewModel : ViewModel() {
             _user.value = null
         }
     }
+
+    suspend fun login(phone: String, password: String): LoginResponse {
+        return api.login(LoginRequest(phone, password))
+    }
+
+    suspend fun requester(fullName: String, phone: String, email: String, password: String): LoginResponse {
+        return api.register(RegisterRequest(fullName, phone, email, password))
+    }
+
 }
