@@ -22,6 +22,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -51,6 +53,7 @@ fun SignInActivity(userViewModel: UserViewModel, navController: NavController) {
             content = password,
             onValueChange = { password = it },
             placeholder = "Vui lòng nhập mật khẩu",
+            visualTransformation = if (isHidePassword) PasswordVisualTransformation() else VisualTransformation.None,
             trailingIcon = {
                 IconButton(
                     onClick = { isHidePassword = !isHidePassword },
@@ -69,7 +72,7 @@ fun SignInActivity(userViewModel: UserViewModel, navController: NavController) {
             onClick = {
                 coroutine.launch {
                     isLoading = true
-                    val response = ApiClient.login(phone, password)
+                    val response = userViewModel.login(phone, password)
                     if (response != null) {
                         if(response.data != null) {
                             userViewModel.saveLoginState(

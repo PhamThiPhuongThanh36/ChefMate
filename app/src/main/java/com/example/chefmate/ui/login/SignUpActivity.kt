@@ -20,6 +20,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -59,6 +61,7 @@ fun SignUpScreen(userViewModel: UserViewModel, navController: NavController) {
                 content = password,
                 onValueChange = { password = it},
                 "Vui lòng nhập mật khẩu",
+                visualTransformation = if (isHidePassword) PasswordVisualTransformation() else VisualTransformation.None,
                 trailingIcon = { IconButton(onClick = {isHidePassword = !isHidePassword}, modifier = Modifier.padding(end = 20.dp).size(28.dp))  { Icon( if(isHidePassword) painterResource(R.drawable.ic_eye_close) else painterResource(R.drawable.ic_eye_open), contentDescription = null) }}
             )
             CustomEditText(
@@ -66,17 +69,13 @@ fun SignUpScreen(userViewModel: UserViewModel, navController: NavController) {
                 content = confirmpw,
                 onValueChange = { confirmpw = it},
                 "Vui lòng xác nhận mật khẩu",
+                visualTransformation = if (isHidePassword) PasswordVisualTransformation() else VisualTransformation.None,
                 trailingIcon = { IconButton(onClick = {isHideConfirmPassword = !isHideConfirmPassword}, modifier = Modifier.padding(end = 20.dp).size(28.dp)) { Icon( if(isHideConfirmPassword) painterResource(R.drawable.ic_eye_close) else painterResource(R.drawable.ic_eye_open), contentDescription = null) }}
             )
             CustomButton("Đăng ký",
                 onClick = {
                     coroutine.launch {
-                        val response = ApiClient.register(
-                            name,
-                            phone,
-                            email,
-                            password
-                        )
+                        val response = userViewModel.requester(name, phone, email, password)
                         if (response != null) {
                             if (response.data != null) {
                                 userViewModel.saveLoginState(
