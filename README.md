@@ -1,4 +1,4 @@
-👩‍🍳 ChefMate
+#👩‍🍳 ChefMate
 
 Ứng dụng được viết bằng **Kotlin** với **Jetpack Compose** và **Room**,**Retrofit**.  
 ChefMate cho phép **lưu trữ công thức nấu ăn, lập kế hoạch nguyên liệu và quản lý danh sách mua sắm** một cách tiện lợi.  
