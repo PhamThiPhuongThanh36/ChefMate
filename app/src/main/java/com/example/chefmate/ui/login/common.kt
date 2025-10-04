@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -25,6 +26,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.Placeholder
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -37,7 +40,7 @@ fun Title(h1: String, h2: String) {
             .background(
                 brush = Brush.linearGradient(
                     colors = listOf(
-                        Color( 0xFFF97316),
+                        Color(0xFFF97316),
                         Color(0xFFFA872F),
                         Color(0xFFFDBA74)
                     )
@@ -64,7 +67,14 @@ fun Title(h1: String, h2: String) {
 }
 
 @Composable
-fun CustomEditText(label: String,content: String, onValueChange: (String) -> Unit, placeholder: String, trailingIcon: @Composable (() -> Unit)? = null) {
+fun CustomEditText(
+    label: String,
+    content: String,
+    onValueChange: (String) -> Unit,
+    placeholder: String,
+    visualTransformation: VisualTransformation? = null,
+    trailingIcon: @Composable (() -> Unit)? = null,
+) {
     Text(
         text = label,
         fontSize = 18.sp,
@@ -79,7 +89,7 @@ fun CustomEditText(label: String,content: String, onValueChange: (String) -> Uni
         placeholder = {
             Text(
                 text = placeholder,
-                color = Color(0xFF737373)
+                color = Color(0xFF737373),
             )
         },
         trailingIcon = trailingIcon,
@@ -91,6 +101,10 @@ fun CustomEditText(label: String,content: String, onValueChange: (String) -> Uni
             focusedIndicatorColor = Color.Transparent,
             unfocusedIndicatorColor = Color.Transparent
         ),
+        keyboardOptions = KeyboardOptions(
+            imeAction = ImeAction.Done
+        ),
+        visualTransformation = visualTransformation ?: VisualTransformation.None,
         modifier = Modifier
             .fillMaxWidth()
             .padding(start = 40.dp, end = 40.dp, top = 10.dp, bottom = 10.dp)
