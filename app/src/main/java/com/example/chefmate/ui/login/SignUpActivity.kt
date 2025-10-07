@@ -69,7 +69,7 @@ fun SignUpScreen(userViewModel: UserViewModel, navController: NavController) {
                 content = confirmpw,
                 onValueChange = { confirmpw = it},
                 "Vui lòng xác nhận mật khẩu",
-                visualTransformation = if (isHidePassword) PasswordVisualTransformation() else VisualTransformation.None,
+                visualTransformation = if (isHideConfirmPassword) PasswordVisualTransformation() else VisualTransformation.None,
                 trailingIcon = { IconButton(onClick = {isHideConfirmPassword = !isHideConfirmPassword}, modifier = Modifier.padding(end = 20.dp).size(28.dp)) { Icon( if(isHideConfirmPassword) painterResource(R.drawable.ic_eye_close) else painterResource(R.drawable.ic_eye_open), contentDescription = null) }}
             )
             CustomButton("Đăng ký",
