@@ -31,7 +31,7 @@ fun RecipeEntity.toRecipe(): Recipe {
         likeQuantity = this.likeQuantity,
         isPublic = this.isPublic,
         createdAt = this.createdAt,
-        userName = "",
+        userName = "phuongthanh",
         userImage = "",
         isLiked = true
     )
