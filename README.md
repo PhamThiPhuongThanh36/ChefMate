@@ -40,10 +40,10 @@ ChefMate cho phép **lưu trữ công thức nấu ăn, lập kế hoạch nguy�
 ### Thêm Công thức
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/4e3917a2-4c69-41a5-9764-d89216eb5e48" alt="Screen 2" width="250" />
-  <img src="https://github.com/user-attachments/assets/53519ab8-762a-4cd1-8dfa-5c903a907bab" alt="Screen 3" width="250" />
-  <img src="https://github.com/user-attachments/assets/a551fd27-af24-44ff-903d-336677a0e0a9" alt="Screen 6" width="250" />
-  <img src="https://github.com/user-attachments/assets/2385846c-733f-4467-a484-f33323816ed5" alt="Screen 7" width="250" />
+  <img src="https://github.com/user-attachments/assets/4e3917a2-4c69-41a5-9764-d89216eb5e48" alt="Screen 2" width="190" />
+  <img src="https://github.com/user-attachments/assets/53519ab8-762a-4cd1-8dfa-5c903a907bab" alt="Screen 3" width="190" />
+  <img src="https://github.com/user-attachments/assets/a551fd27-af24-44ff-903d-336677a0e0a9" alt="Screen 6" width="190" />
+  <img src="https://github.com/user-attachments/assets/2385846c-733f-4467-a484-f33323816ed5" alt="Screen 7" width="190" />
 </p>
 
 ### Lập danh sách mua sắm
