@@ -245,6 +245,9 @@ fun AddShoppingScreen(
                             unit = ingredientUnit
                         )
                         ingredients.add(newIngredient)
+                        ingredientName = ""
+                        ingredientWeight = ""
+                        ingredientUnit = ""
                         Log.d("ingredients", ingredients.toString())
                         isShowAddManualIngredient = false
                     }
