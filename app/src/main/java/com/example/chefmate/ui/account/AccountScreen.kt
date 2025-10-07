@@ -161,6 +161,7 @@ fun AccountScreen(userViewModel: UserViewModel, recipeViewModel: RecipeViewModel
                                 )
                                 Spacer(modifier = Modifier.weight(1f))
                                 Row(
+                                    verticalAlignment = Alignment.CenterVertically,
                                     modifier = Modifier
                                         .clickable {  }
                                 ) {
