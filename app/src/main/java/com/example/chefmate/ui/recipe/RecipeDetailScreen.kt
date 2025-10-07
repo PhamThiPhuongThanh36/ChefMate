@@ -208,7 +208,7 @@ fun RecipeScreen(
                             .border(1.dp, Color(0xFFF97316), shape = CircleShape)
                     )
                     Text(
-                        text = recipe?.userName ?: "thanhphong",
+                        text = recipe?.userName ?: "",
                         fontSize = 14.sp,
                         modifier = Modifier
                             .padding(start = 10.dp)
@@ -388,7 +388,7 @@ fun IngredientItem(ingredient: IngredientInput) {
         modifier = Modifier.padding(start = 40.dp, top = 5.dp, end = 40.dp)
     ) {
         Text(
-            text = "${ingredient.ingredientName} ${ingredient.weight}${ingredient.unit}",
+            text = "${ingredient.ingredientName} ${ingredient.weight} ${ingredient.unit}",
             fontSize = 14.sp,
         )
 
