@@ -208,7 +208,7 @@ fun RecipeScreen(
                             .border(1.dp, Color(0xFFF97316), shape = CircleShape)
                     )
                     Text(
-                        text = recipe?.userName ?: "",
+                        text = recipe?.userName ?: "thanhphong",
                         fontSize = 14.sp,
                         modifier = Modifier
                             .padding(start = 10.dp)
