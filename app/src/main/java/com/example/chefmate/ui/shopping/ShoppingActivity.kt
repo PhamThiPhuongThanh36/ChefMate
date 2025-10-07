@@ -70,8 +70,7 @@ fun ShoppingScreen(
         val context = LocalContext.current
         var siEditId by remember { mutableStateOf<Int?>(null) }
         var siEdit by remember { mutableStateOf<ShoppingItemEntity?>(null) }
-        var siDeleteId by remember { mutableStateOf<Int?>(null) }
-        var ingredientDelete by remember { mutableStateOf<IngredientEntity?>(null) }
+        var ingredientDelete by remember { mutableStateOf<ShoppingItemEntity?>(null) }
         var listShoppingItems by remember { mutableStateOf<List<ShoppingItemEntity>>(emptyList()) }
         val coroutineScope = rememberCoroutineScope()
         var refreshKey by remember { mutableStateOf(0) }
@@ -162,7 +161,7 @@ fun ShoppingScreen(
                                     tint = Color(0xFF4C4C4C),
                                     modifier = Modifier
                                         .clickable {
-                                            siDeleteId = listShoppingItems[index].siId
+                                            ingredientDelete = listShoppingItems[index]
                                             isShowDeleteIngredient = true
                                         }
                                 )
@@ -228,14 +227,14 @@ fun ShoppingScreen(
                 if (isShowDeleteIngredient) {
                     CustomAlertDialog(
                         title = "Xóa nguyên liệu",
-                        content = "Bạn có chắc chắn xóa nguyên liệu ${ingredientDelete?.ingredientName} ${ingredientDelete?.weight} ${ingredientDelete?.unit}?",
+                        content = "Bạn có chắc chắn xóa nguyên liệu ${ingredientDelete?.siName} ${ingredientDelete?.siWeight} ${ingredientDelete?.siUnit}?",
                         onDismiss = {
                             isShowDeleteIngredient = false
                         },
                         confirmText = "Xóa",
                         onConfirm = {
                             coroutineScope.launch {
-                                shoppingViewModel.deleteShoppingItemById(siDeleteId ?: -1)
+                                shoppingViewModel.deleteShoppingItemById(ingredientDelete?.siId ?: -1)
                             }
                             refreshKey++
                             isShowDeleteIngredient = false
