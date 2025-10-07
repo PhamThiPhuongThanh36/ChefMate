@@ -1,4 +1,4 @@
-<img width="1080" height="2340" alt="image" src="https://github.com/user-attachments/assets/748b7ac0-dc0c-44a3-af3e-f57ccd5d0e43" /># 👩‍🍳 ChefMate
+# 👩‍🍳 ChefMate
 
 Ứng dụng được viết bằng **Kotlin** với **Jetpack Compose** và **Room**.  
 ChefMate cho phép **lưu trữ công thức nấu ăn, lập kế hoạch nguyên liệu và quản lý danh sách mua sắm** một cách tiện lợi.  
@@ -29,15 +29,25 @@ ChefMate cho phép **lưu trữ công thức nấu ăn, lập kế hoạch nguy�
 
 ---
 
-## Giao diện
-![Image](https://github.com/user-attachments/assets/4e3917a2-4c69-41a5-9764-d89216eb5e48)
-![Image](https://github.com/user-attachments/assets/53519ab8-762a-4cd1-8dfa-5c903a907bab)
-![Image](https://github.com/user-attachments/assets/a4ff0ca8-f6f8-4ec1-9038-c0b5bca19910)
-![Image](https://github.com/user-attachments/assets/acbae993-c39b-406c-8897-d68a72bee6cf)
-![Image](https://github.com/user-attachments/assets/a551fd27-af24-44ff-903d-336677a0e0a9)
-![Image](https://github.com/user-attachments/assets/2385846c-733f-4467-a484-f33323816ed5)
-![Image](https://github.com/user-attachments/assets/bac616ee-e8ee-4da8-8493-e437077e37b3)
-![Image](https://github.com/user-attachments/assets/110880a3-7ec2-49fe-9e11-3255b57d159e)
+## 📱 Giao diện
+
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/748b7ac0-dc0c-44a3-af3e-f57ccd5d0e43" alt="Screen 1" width="250" />
+  <img src="https://github.com/user-attachments/assets/4e3917a2-4c69-41a5-9764-d89216eb5e48" alt="Screen 2" width="250" />
+  <img src="https://github.com/user-attachments/assets/53519ab8-762a-4cd1-8dfa-5c903a907bab" alt="Screen 3" width="250" />
+</p>
+
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/a4ff0ca8-f6f8-4ec1-9038-c0b5bca19910" alt="Screen 4" width="250" />
+  <img src="https://github.com/user-attachments/assets/acbae993-c39b-406c-8897-d68a72bee6cf" alt="Screen 5" width="250" />
+  <img src="https://github.com/user-attachments/assets/a551fd27-af24-44ff-903d-336677a0e0a9" alt="Screen 6" width="250" />
+</p>
+
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/2385846c-733f-4467-a484-f33323816ed5" alt="Screen 7" width="250" />
+  <img src="https://github.com/user-attachments/assets/bac616ee-e8ee-4da8-8493-e437077e37b3" alt="Screen 8" width="250" />
+  <img src="https://github.com/user-attachments/assets/110880a3-7ec2-49fe-9e11-3255b57d159e" alt="Screen 9" width="250" />
+</p>
 
 ---
 
