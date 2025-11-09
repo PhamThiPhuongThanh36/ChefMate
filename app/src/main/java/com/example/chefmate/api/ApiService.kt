@@ -43,6 +43,7 @@ interface ApiService {
         @Part("ration") ration: RequestBody,
         @Part("ingredients") ingredients: RequestBody,
         @Part("steps") steps: RequestBody,
+        @Part("isPublic") isPublic: RequestBody,
         @Part("userId") userId: RequestBody,
         @Part image: MultipartBody.Part
     ): CreateRecipeResponse
