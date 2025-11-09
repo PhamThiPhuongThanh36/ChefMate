@@ -56,6 +56,7 @@ suspend fun createRecipeRetrofit(
         val ration = recipe.ration.toString().toRequestBody("text/plain".toMediaTypeOrNull())
         val ingredients = Gson().toJson(recipe.ingredients).toRequestBody("text/plain".toMediaTypeOrNull())
         val steps = Gson().toJson(recipe.steps).toRequestBody("text/plain".toMediaTypeOrNull())
+        val isPublic = recipe.isPublic.toString().toRequestBody("text/plain".toMediaTypeOrNull())
         val userId = recipe.userId.toString().toRequestBody("text/plain".toMediaTypeOrNull())
 
         return api.createRecipe(
@@ -64,6 +65,7 @@ suspend fun createRecipeRetrofit(
             ration,
             ingredients,
             steps,
+            isPublic,
             userId,
             imagePart
         )
