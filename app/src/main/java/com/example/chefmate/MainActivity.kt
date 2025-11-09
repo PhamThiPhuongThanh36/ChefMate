@@ -20,10 +20,10 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.createGraph
 import androidx.navigation.navArgument
+import com.example.chefmate.ui.account.EditAccountScreen
 import com.example.chefmate.ui.login.SignInActivity
 import com.example.chefmate.ui.login.SignUpScreen
 import com.example.chefmate.ui.main.MainAct
-import com.example.chefmate.ui.main.SplashScreen
 import com.example.chefmate.ui.recipe.AddEditRecipeScreen
 import com.example.chefmate.ui.recipe.RecipeScreen
 import com.example.chefmate.ui.shopping.AddShoppingScreen
@@ -58,10 +58,7 @@ fun MainScreen() {
 
 @SuppressLint("ViewModelConstructorInComposable")
 fun NavGraph(navController: NavController): NavGraph {
-        return navController.createGraph(startDestination = "splash") {
-            composable("splash") {
-                SplashScreen(navController)
-            }
+        return navController.createGraph(startDestination = "mainAct") {
             composable("mainAct") {
                 MainAct(navController)
             }
@@ -96,6 +93,10 @@ fun NavGraph(navController: NavController): NavGraph {
             }
             composable("signUp") {
                 SignUpScreen(userViewModel = UserViewModel(), navController)
+            }
+
+            composable("editAccount") {
+                EditAccountScreen(navController)
             }
     }
 }
