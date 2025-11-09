@@ -28,7 +28,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.chefmate.R
-import com.example.chefmate.api.ApiClient
+import com.example.chefmate.common.LoadingScreen
 import com.example.chefmate.viewmodel.UserViewModel
 import kotlinx.coroutines.launch
 
@@ -39,6 +39,7 @@ fun SignUpScreen(userViewModel: UserViewModel, navController: NavController) {
             .fillMaxSize()
             .background(Color(0xFFFFFFFF))
     ) {
+        var isLoading by remember { mutableStateOf(false) }
         var name by remember { mutableStateOf("") }
         var phone by remember { mutableStateOf("") }
         var email by remember { mutableStateOf("") }
@@ -75,15 +76,15 @@ fun SignUpScreen(userViewModel: UserViewModel, navController: NavController) {
             CustomButton("Đăng ký",
                 onClick = {
                     coroutine.launch {
+                        isLoading = true
                         val response = userViewModel.requester(name, phone, email, password)
-                        if (response != null) {
-                            if (response.data != null) {
-                                userViewModel.saveLoginState(
-                                    context,
-                                    userData = response.data
-                                )
-                                navController.navigate("mainAct")
-                            }
+                        if (response.data != null) {
+                            userViewModel.saveLoginState(
+                                context,
+                                userData = response.data
+                            )
+                            isLoading = false
+                            navController.navigate("mainAct")
                         }
                     }
                 },
@@ -91,6 +92,9 @@ fun SignUpScreen(userViewModel: UserViewModel, navController: NavController) {
                     .padding(top = 20.dp)
                     .align(Alignment.CenterHorizontally)
             )
+        }
+        if (isLoading) {
+            LoadingScreen()
         }
     }
 }
