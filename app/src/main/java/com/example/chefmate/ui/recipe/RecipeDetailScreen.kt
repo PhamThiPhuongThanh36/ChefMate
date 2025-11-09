@@ -42,6 +42,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
@@ -213,6 +214,7 @@ fun RecipeScreen(
                         contentScale = ContentScale.Crop,
                         modifier = Modifier
                             .size(30.dp)
+                            .clip(CircleShape)
                             .border(1.dp, Color(0xFFF97316), shape = CircleShape)
                     )
                     Text(
