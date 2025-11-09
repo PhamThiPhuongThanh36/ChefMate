@@ -1,14 +1,11 @@
 package com.example.chefmate.model
 
-import com.example.chefmate.database.entity.IngredientEntity
-import com.example.chefmate.database.entity.TagEntity
-
 data class CreateRecipeData(
     val recipeName: String,
     val cookingTime: String,
     val ration: Int,
     val ingredients: List<IngredientItem>,
-    val cookingSteps: List<CookingStepAddRecipeData>,
+    val steps: List<CookingStepAddRecipeData>,
     val userId: Int,
     val image: String,
     val tags: List<TagData>
@@ -26,6 +23,7 @@ data class IngredientItem(
 )
 
 data class CookingStepAddRecipeData(
+    val indexStep: Int,
     val content: String,
 )
 
@@ -52,10 +50,25 @@ data class UserData(
     val fullName: String,
     val phone: String,
     val email: String,
+    val image: String,
     val passwordHash: String? = null,
     val followCount: Int,
     val recipeCount: Int,
     val createdAt: String
+)
+
+data class UserRequest(
+    val userId: Int,
+    val fullName: String,
+    val phone: String,
+    val email: String,
+    val image: String
+)
+
+data class AnotherUserData(
+    val userId: Int,
+    val fullName: String,
+    val image: String
 )
 
 data class CreateRecipeResponse(
@@ -63,3 +76,19 @@ data class CreateRecipeResponse(
     val data: Int? = null,
     val message: String? = null
 )
+
+data class CollectionRequest(
+    val userId: Int,
+    val recipeId: Int
+)
+
+data class ApiResponse<T>(
+    val success: Boolean,
+    val data: T?,
+    val message: String? = null
+)
+
+data class GetCollectionRequest(
+    val userId: Int
+)
+
