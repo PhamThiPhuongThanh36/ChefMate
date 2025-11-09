@@ -308,7 +308,10 @@ fun EditAccountScreen(navController: NavController) {
                                                 username = fullName,
                                                 email = email,
                                                 phoneNumber = phone,
-                                                image = imageUri.toString()
+                                                image = imageUri.toString(),
+                                                followCount = DataStoreHelper.getUserData(context).followCount,
+                                                recipeCount = DataStoreHelper.getUserData(context).recipeCount,
+                                                createdAt = DataStoreHelper.getUserData(context).createdAt
                                             )
                                             isLoading = false
                                             navController.popBackStack()
