@@ -1,13 +1,13 @@
 package com.example.chefmate.database.dao
 
 import androidx.room.Dao
-import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Transaction
 import androidx.room.Update
 import com.example.chefmate.database.entity.RecipeEntity
-import com.example.chefmate.model.Recipe
+import com.example.chefmate.database.entity.RecipeWithDetails
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -30,4 +30,7 @@ interface RecipeDao {
     @Query("SELECT * FROM Recipes WHERE recipeName LIKE '%' || :query || '%'")
     fun searchRecipes(query: String): Flow<List<RecipeEntity>>
 
+    @Transaction
+    @Query("SELECT * FROM Recipes WHERE recipeId = :recipeId LIMIT 1")
+    suspend fun getRecipeWithDetails(recipeId: Int): RecipeWithDetails?
 }
