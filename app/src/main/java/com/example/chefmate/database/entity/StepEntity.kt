@@ -7,7 +7,7 @@ import androidx.room.PrimaryKey
 data class StepEntity(
     @PrimaryKey(autoGenerate = true)
     val stepId: Int? = null,
-    val recipeId: Int,
+    val recipeId: Int? = null,
     val description: String
 )
 
