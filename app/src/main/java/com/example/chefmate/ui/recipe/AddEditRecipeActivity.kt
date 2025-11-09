@@ -135,7 +135,7 @@ fun AddEditRecipeScreen(recipeId: Int, navController: NavController, recipeViewM
     }
 
     LaunchedEffect(recipeId) {
-        val recipe = recipeViewModel.getRecipeById(recipeId).first()
+        val recipe = recipeViewModel.getRecipeById(recipeId)
         recipe?.let {
             recipeName = recipe.recipeName
             imageUri = recipe.image.toUri()
@@ -591,7 +591,9 @@ fun AddEditRecipeScreen(recipeId: Int, navController: NavController, recipeViewM
                                     )
                                 }
                                 val listSteps = steps.map {
-                                    CookingStepAddRecipeData(it.description)
+                                    CookingStepAddRecipeData(
+                                        indexStep = steps.indexOf(it) + 1,
+                                        content = it.description)
                                 }
                                 val listTags = tags.map { TagData(it) }
                                 val recipe = CreateRecipeData(
@@ -604,6 +606,7 @@ fun AddEditRecipeScreen(recipeId: Int, navController: NavController, recipeViewM
                                     imageUri.toString(),
                                     listTags,
                                 )
+                                Log.d("RecipeData", "Ingredients: $listIngredients, Steps: $listSteps, Tags: $listTags")
                                 val response = createRecipeRetrofit(
                                     context = context,
                                     recipe = recipe,
@@ -659,7 +662,7 @@ fun AddEditRecipeScreen(recipeId: Int, navController: NavController, recipeViewM
                         } else {
                             val newRecipe = RecipeEntity(
                                 recipeId = recipeId,
-                                userId = 1,
+                                userId = userId,
                                 recipeName = recipeName,
                                 image = imageUri.toString(),
                                 cookingTime = cookingTime,
