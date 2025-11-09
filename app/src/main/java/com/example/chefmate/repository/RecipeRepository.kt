@@ -1,5 +1,8 @@
 package com.example.chefmate.repository
 
+import android.util.Log
+import com.example.chefmate.api.ApiClient
+import com.example.chefmate.api.ApiConstant
 import com.example.chefmate.database.dao.IngredientDao
 import com.example.chefmate.database.dao.RecipeDao
 import com.example.chefmate.database.dao.StepDao
@@ -8,6 +11,8 @@ import com.example.chefmate.database.entity.IngredientEntity
 import com.example.chefmate.database.entity.RecipeEntity
 import com.example.chefmate.database.entity.StepEntity
 import com.example.chefmate.database.entity.TagEntity
+import com.example.chefmate.database.entity.toRecipeView
+import com.example.chefmate.model.RecipeView
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
@@ -17,6 +22,8 @@ class   RecipeRepository @Inject constructor(
     private val stepDao: StepDao,
     private val tagDao: TagDao
 ) {
+    val api = ApiClient.createService(ApiConstant.MAIN_URL)
+
     fun getAllRecipes() : Flow<List<RecipeEntity>> {
         return recipeDao.getAllRecipes()
     }
@@ -76,6 +83,21 @@ class   RecipeRepository @Inject constructor(
 
     fun searchRecipes(query: String): Flow<List<RecipeEntity>> {
         return recipeDao.searchRecipes(query)
+    }
+
+    suspend fun getRecipeByIdLocal(recipeId: Int): RecipeView? {
+        val recipeEntity = recipeDao.getRecipeWithDetails(recipeId)
+        return recipeEntity?.toRecipeView()
+    }
+
+    suspend fun getRecipeByIdServer(recipeId: Int): RecipeView? {
+        return try {
+            val response = api.getRecipeById(recipeId)
+            Log.d("RecipeRepository", response.data.toString())
+            if (response.success && response.data != null) response.data else null
+        } catch (e: Exception) {
+            null
+        }
     }
 
 }
