@@ -85,7 +85,7 @@ fun MainAct(navController: NavController) {
                 ) {
                     when (page) {
                         0 -> {
-                            HomeScreen(recipeViewModel)
+                            HomeScreen(recipeViewModel, navController)
                         }
                         1 -> {
                             RecipeListScreen(navController)
