@@ -30,6 +30,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.chefmate.R
 import com.example.chefmate.api.ApiClient
+import com.example.chefmate.common.LoadingScreen
 import com.example.chefmate.viewmodel.UserViewModel
 import kotlinx.coroutines.launch
 
@@ -73,21 +74,17 @@ fun SignInActivity(userViewModel: UserViewModel, navController: NavController) {
                 coroutine.launch {
                     isLoading = true
                     val response = userViewModel.login(phone, password)
-                    if (response != null) {
-                        if(response.data != null) {
-                            userViewModel.saveLoginState(
-                                context = context,
-                                userData = response.data
-                            )
-                            navController.navigate("mainAct")
-                        } else {
-                            Toast.makeText(context, "Đăng nhập thất bại", Toast.LENGTH_SHORT).show()
-                        }
+                    if(response.data != null) {
+                        userViewModel.saveLoginState(
+                            context = context,
+                            userData = response.data
+                        )
+                        isLoading = false
+                        navController.navigate("mainAct")
                     } else {
                         Toast.makeText(context, "Đăng nhập thất bại", Toast.LENGTH_SHORT).show()
                     }
                 }
-                isLoading = false
             },
             modifier = Modifier
                 .align(Alignment.CenterHorizontally)
@@ -103,6 +100,9 @@ fun SignInActivity(userViewModel: UserViewModel, navController: NavController) {
                     navController.navigate("signUp")
                 }
         )
+        if (isLoading) {
+            LoadingScreen()
+        }
     }
 }
 
