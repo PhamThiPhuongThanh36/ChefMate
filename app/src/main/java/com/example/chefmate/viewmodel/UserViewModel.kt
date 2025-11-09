@@ -41,6 +41,7 @@ class UserViewModel : ViewModel() {
                 username = userData.fullName,
                 email = userData.email,
                 phoneNumber = userData.phone,
+                image = userData.image,
                 followCount = userData.followCount,
                 recipeCount = userData.recipeCount,
                 createdAt = userData.createdAt
@@ -70,5 +71,4 @@ class UserViewModel : ViewModel() {
     suspend fun requester(fullName: String, phone: String, email: String, password: String): LoginResponse {
         return api.register(RegisterRequest(fullName, phone, email, password))
     }
-
 }
