@@ -8,6 +8,7 @@ data class CreateRecipeData(
     val steps: List<CookingStepAddRecipeData>,
     val userId: Int,
     val image: String,
+    val isPublic: Boolean,
     val tags: List<TagData>
 )
 
