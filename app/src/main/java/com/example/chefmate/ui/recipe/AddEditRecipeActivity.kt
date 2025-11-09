@@ -538,124 +538,80 @@ fun AddEditRecipeScreen(recipeId: Int, navController: NavController, recipeViewM
                         val userId = DataStoreHelper.getUserData(context).userId
                         isLoading = true
                         if (recipeId == -1) {
-                            if (isPublic == false) {
-                                val newRecipe = RecipeEntity(
-                                    userId = userId,
-                                    recipeName = recipeName,
-                                    image = imageUri.toString(),
-                                    cookingTime = cookingTime,
-                                    ration = ration.toInt(),
-                                    viewCount = 0,
-                                    likeQuantity = 0,
-                                    isPublic = if (selectedOption.value == "Riêng tư") false else true,
-                                    createdAt = currentDateTime
+                            val listIngredients = ingredients.map {
+                                IngredientItem(
+                                    it.ingredientId,
+                                    it.ingredientName,
+                                    it.weight.toInt(),
+                                    it.unit
                                 )
-                                val newRecipeId = recipeViewModel.insertRecipe(newRecipe).toInt()
-
-                                val tagEntities = tags.map { tag ->
-                                    TagEntity(
-                                        recipeId = newRecipeId,
-                                        tagName = tag
+                            }
+                            val listSteps = steps.map {
+                                CookingStepAddRecipeData(
+                                    indexStep = steps.indexOf(it) + 1,
+                                    content = it.description)
+                            }
+                            val listTags = tags.map { TagData(it) }
+                            val recipe = CreateRecipeData(
+                                recipeName,
+                                cookingTime,
+                                ration.toInt(),
+                                listIngredients,
+                                listSteps,
+                                userId,
+                                imageUri.toString(),
+                                isPublic,
+                                listTags,
+                            )
+                            Log.d("RecipeData", "Ingredients: $listIngredients, Steps: $listSteps, Tags: $listTags")
+                            val response = createRecipeRetrofit(
+                                context = context,
+                                recipe = recipe,
+                                api = api
+                            )
+                            if (response != null) {
+                                if (response.success) {
+                                    val newRecipe = RecipeEntity(
+                                        userId = userId,
+                                        recipeName = recipeName,
+                                        image = imageUri.toString(),
+                                        cookingTime = cookingTime,
+                                        ration = ration.toInt(),
+                                        viewCount = 0,
+                                        likeQuantity = 0,
+                                        isPublic = if (selectedOption.value == "Riêng tư") false else true,
+                                        createdAt = currentDateTime
                                     )
-                                }.filter { it.tagName.isNotBlank() }
-                                recipeViewModel.insertTags(tagEntities)
+                                    val newRecipeId = recipeViewModel.insertRecipe(newRecipe).toInt()
 
-                                val ingredientEntities = ingredients.map { ingredientInput ->
-                                    IngredientEntity(
-                                        recipeId = newRecipeId,
-                                        ingredientName = ingredientInput.ingredientName,
-                                        weight = ingredientInput.weight,
-                                        unit = ingredientInput.unit
-                                    )
-                                }.filter { it.ingredientName.isNotBlank() }
-                                recipeViewModel.insertIngredients(ingredientEntities)
-
-                                val stepEntities = steps.map { stepInput ->
-                                    com.example.chefmate.database.entity.StepEntity(
-                                        recipeId = newRecipeId,
-                                        description = stepInput.description
-                                    )
-                                }.filter { it.description.isNotBlank() }
-                                recipeViewModel.insertSteps(stepEntities)
-
-                                withContext(Dispatchers.Main) {
-                                    navController.popBackStack()
-                                }
-                            } else {
-                                val listIngredients = ingredients.map {
-                                    IngredientItem(
-                                        it.ingredientId,
-                                        it.ingredientName,
-                                        it.weight.toInt(),
-                                        it.unit
-                                    )
-                                }
-                                val listSteps = steps.map {
-                                    CookingStepAddRecipeData(
-                                        indexStep = steps.indexOf(it) + 1,
-                                        content = it.description)
-                                }
-                                val listTags = tags.map { TagData(it) }
-                                val recipe = CreateRecipeData(
-                                    recipeName,
-                                    cookingTime,
-                                    ration.toInt(),
-                                    listIngredients,
-                                    listSteps,
-                                    userId,
-                                    imageUri.toString(),
-                                    listTags,
-                                )
-                                Log.d("RecipeData", "Ingredients: $listIngredients, Steps: $listSteps, Tags: $listTags")
-                                val response = createRecipeRetrofit(
-                                    context = context,
-                                    recipe = recipe,
-                                    api = api
-                                )
-                                if (response != null) {
-                                    if (response.success) {
-                                        val newRecipe = RecipeEntity(
-                                            userId = userId,
-                                            recipeName = recipeName,
-                                            image = imageUri.toString(),
-                                            cookingTime = cookingTime,
-                                            ration = ration.toInt(),
-                                            viewCount = 0,
-                                            likeQuantity = 0,
-                                            isPublic = if (selectedOption.value == "Riêng tư") false else true,
-                                            createdAt = currentDateTime
+                                    val tagEntities = tags.map { tag ->
+                                        TagEntity(
+                                            recipeId = newRecipeId,
+                                            tagName = tag
                                         )
-                                        val newRecipeId = recipeViewModel.insertRecipe(newRecipe).toInt()
+                                    }.filter { it.tagName.isNotBlank() }
+                                    recipeViewModel.insertTags(tagEntities)
 
-                                        val tagEntities = tags.map { tag ->
-                                            TagEntity(
-                                                recipeId = newRecipeId,
-                                                tagName = tag
-                                            )
-                                        }.filter { it.tagName.isNotBlank() }
-                                        recipeViewModel.insertTags(tagEntities)
+                                    val ingredientEntities = ingredients.map { ingredientInput ->
+                                        IngredientEntity(
+                                            recipeId = newRecipeId,
+                                            ingredientName = ingredientInput.ingredientName,
+                                            weight = ingredientInput.weight,
+                                            unit = ingredientInput.unit
+                                        )
+                                    }.filter { it.ingredientName.isNotBlank() }
+                                    recipeViewModel.insertIngredients(ingredientEntities)
 
-                                        val ingredientEntities = ingredients.map { ingredientInput ->
-                                            IngredientEntity(
-                                                recipeId = newRecipeId,
-                                                ingredientName = ingredientInput.ingredientName,
-                                                weight = ingredientInput.weight,
-                                                unit = ingredientInput.unit
-                                            )
-                                        }.filter { it.ingredientName.isNotBlank() }
-                                        recipeViewModel.insertIngredients(ingredientEntities)
+                                    val stepEntities = steps.map { stepInput ->
+                                        com.example.chefmate.database.entity.StepEntity(
+                                            recipeId = newRecipeId,
+                                            description = stepInput.description
+                                        )
+                                    }.filter { it.description.isNotBlank() }
+                                    recipeViewModel.insertSteps(stepEntities)
 
-                                        val stepEntities = steps.map { stepInput ->
-                                            com.example.chefmate.database.entity.StepEntity(
-                                                recipeId = newRecipeId,
-                                                description = stepInput.description
-                                            )
-                                        }.filter { it.description.isNotBlank() }
-                                        recipeViewModel.insertSteps(stepEntities)
-
-                                        withContext(Dispatchers.Main) {
-                                            navController.popBackStack()
-                                        }
+                                    withContext(Dispatchers.Main) {
+                                        navController.popBackStack()
                                     }
                                 }
                             }
