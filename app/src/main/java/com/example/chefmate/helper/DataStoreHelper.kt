@@ -17,6 +17,7 @@ val USER_ID = intPreferencesKey("user_id")
 val USERNAME = stringPreferencesKey("username")
 val EMAIL = stringPreferencesKey("email")
 val PHONE_NUMBER = stringPreferencesKey("phone_number")
+val IMAGE = stringPreferencesKey("image")
 val FOLLOW_COUNT = intPreferencesKey("follow_count")
 val RECIPE_COUNT = intPreferencesKey("recipe_count")
 val CREATED_AT = stringPreferencesKey("created_at")
@@ -35,6 +36,7 @@ object DataStoreHelper {
         username: String,
         email: String,
         phoneNumber: String,
+        image: String,
         followCount: Int,
         recipeCount: Int,
         createdAt: String
@@ -45,6 +47,7 @@ object DataStoreHelper {
             preferences[USERNAME] = username
             preferences[EMAIL] = email
             preferences[PHONE_NUMBER] = phoneNumber
+            preferences[IMAGE] = image
             preferences[FOLLOW_COUNT] = followCount
             preferences[RECIPE_COUNT] = recipeCount
             preferences[CREATED_AT] = createdAt
@@ -57,7 +60,8 @@ object DataStoreHelper {
             userId = preferences[USER_ID] ?: 0,
             fullName = preferences[USERNAME] ?: "User",
             phone = preferences[PHONE_NUMBER] ?: "0123456789",
-            preferences[EMAIL] ?: "user@gmail.com",
+            email = preferences[EMAIL] ?: "user@gmail.com",
+            image = preferences[IMAGE] ?: "",
             followCount = preferences[FOLLOW_COUNT] ?: 0,
             recipeCount = preferences[RECIPE_COUNT] ?: 0,
             createdAt = preferences[CREATED_AT] ?: "2025-06-26"
