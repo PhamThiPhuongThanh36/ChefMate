@@ -1,11 +1,11 @@
 package com.example.chefmate.ui.recipe
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -16,30 +16,27 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardColors
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -62,10 +59,11 @@ import com.example.chefmate.R
 import com.example.chefmate.model.Recipe
 import com.example.chefmate.common.*
 import com.example.chefmate.model.IngredientInput
-import com.example.chefmate.model.StepInput
 import com.example.chefmate.viewmodel.RecipeViewModel
-import kotlinx.coroutines.flow.map
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.chefmate.api.ApiConstant
+import com.example.chefmate.model.CookingStepAddRecipeData
+import com.example.chefmate.model.RecipeView
 import kotlinx.coroutines.launch
 
 @SuppressLint("UseOfNonLambdaOffsetOverload", "CoroutineCreationDuringComposition")
@@ -75,6 +73,7 @@ fun RecipeScreen(
     recipeViewModel: RecipeViewModel = hiltViewModel(),
     recipeId: Int,
 ) {
+    var isLoading by remember { mutableStateOf(true) }
     val coroutineScope = rememberCoroutineScope()
     val lazyListState1 = rememberLazyListState()
     var selectedPageManual by remember { mutableIntStateOf(-1) }
@@ -99,36 +98,45 @@ fun RecipeScreen(
         label = "Footer Offset"
     )
 
-    val recipe by recipeViewModel.getRecipeById(recipeId)
-        .collectAsState(initial = null)
-
+    var recipe by remember { mutableStateOf<RecipeView?>(null) }
+    LaunchedEffect(Unit) {
+        isLoading = true
+        recipe = recipeViewModel.getRecipeById(recipeId)
+        Log.d("recipeView:", recipe.toString())
+        isLoading = false
+    }
+    val imageUrl = recipe?.image.let {
+        it?.let { it1 ->
+            if (it1.startsWith("/uploads")) {
+                ApiConstant.MAIN_URL.trimEnd('/') + recipe?.image
+            } else {
+                recipe?.image
+            }
+        }
+    }
+    val avatar = recipe?.user?.image.let {
+        if (it?.startsWith("/uploads") == true) {
+            ApiConstant.MAIN_URL.trimEnd('/') + recipe?.user?.image
+        } else {
+            null
+        }
+    }
+    Log.d("Avatar: ", avatar.toString())
+    if (isLoading) {
+        LoadingScreen()
+        return
+    }
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFFFFFFFF))
             .statusBarsPadding()
     ) {
-        val ingredients by remember(recipeId) {
-            recipeViewModel.getIngredientsByRecipeId(recipeId)
-                .map { ingredientEntities ->
-                    ingredientEntities.map { entity ->
-                        IngredientInput(
-                            entity.ingredientName,
-                            entity.weight.toString(),
-                            entity.unit
-                        )
-                    }
-                }
-        }.collectAsState(initial = emptyList())
+        val ingredients = recipe?.ingredients ?: emptyList()
+        val steps = recipe?.steps ?: emptyList()
 
-        val steps by remember(recipeId) {
-            recipeViewModel.getStepsByRecipeId(recipeId)
-                .map { stepEntities ->
-                    stepEntities.map { entity ->
-                        StepInput(entity.description)
-                    }
-                }
-        }.collectAsState(initial = emptyList())
+        Log.d("Ingredients: ", ingredients.toString())
+        Log.d("Steps: ", steps.toString())
 
         Header(
             leadingIcon = {
@@ -179,7 +187,7 @@ fun RecipeScreen(
                         .align(Alignment.CenterHorizontally)
                 ) {
                     Image(
-                        painter = rememberAsyncImagePainter(model = recipe?.image),
+                        painter = rememberAsyncImagePainter(model = imageUrl),
                         contentDescription = null,
                         contentScale = ContentScale.Crop,
                         modifier = Modifier
@@ -200,7 +208,7 @@ fun RecipeScreen(
                         .padding(start = 30.dp, top = 10.dp)
                 ) {
                     Image(
-                        painter = rememberAsyncImagePainter(model = recipe?.userImage),
+                        painter = rememberAsyncImagePainter(model = avatar),
                         contentDescription = null,
                         contentScale = ContentScale.Crop,
                         modifier = Modifier
@@ -208,8 +216,9 @@ fun RecipeScreen(
                             .border(1.dp, Color(0xFFF97316), shape = CircleShape)
                     )
                     Text(
-                        text = recipe?.userName ?: "",
+                        text = recipe?.user?.fullName ?: "",
                         fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold,
                         modifier = Modifier
                             .padding(start = 10.dp)
                     )
@@ -416,9 +425,9 @@ fun IngredientItem(ingredient: IngredientInput) {
 }
 
 @Composable
-fun StepItem(step: StepInput) {
+fun StepItem(step: CookingStepAddRecipeData) {
     Text(
-        text = step.description,
+        text = step.content,
         fontSize = 14.sp
     )
 }
