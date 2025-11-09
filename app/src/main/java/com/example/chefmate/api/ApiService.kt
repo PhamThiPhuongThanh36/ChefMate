@@ -13,6 +13,28 @@ interface ApiService {
     @POST("api/users/login")
     suspend fun login(@Body request: LoginRequest): LoginResponse
 
+    @POST("api/recipes/insertCollection")
+    suspend fun insertCollection(@Body request: CollectionRequest): ApiResponse<Unit>
+
+    @POST("api/recipes/getCollection")
+    suspend fun getCollection(@Body request: GetCollectionRequest): ApiResponse<List<Recipe>>
+
+    @GET("api/recipes/trending")
+    suspend fun getTopTrending(): List<Recipe>
+
+    @GET("api/recipes/recipe")
+    suspend fun getRecipeById(@Query("recipeId") recipeId: Int): ApiResponse<RecipeView>
+
+    @Multipart
+    @PUT("api/users/{userId}/profile")
+    suspend fun updateProfile(
+        @Path("userId") userId: Int,
+        @Part("fullName") fullName: RequestBody,
+        @Part("phone") phone: RequestBody,
+        @Part("email") email: RequestBody,
+        @Part image: MultipartBody.Part? = null
+    ): ApiResponse<Unit>
+
     @Multipart
     @POST("api/recipes/create")
     suspend fun createRecipe(
@@ -20,7 +42,7 @@ interface ApiService {
         @Part("cookingTime") cookingTime: RequestBody,
         @Part("ration") ration: RequestBody,
         @Part("ingredients") ingredients: RequestBody,
-        @Part("cookingSteps") cookingSteps: RequestBody,
+        @Part("steps") steps: RequestBody,
         @Part("userId") userId: RequestBody,
         @Part image: MultipartBody.Part
     ): CreateRecipeResponse
