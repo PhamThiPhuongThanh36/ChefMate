@@ -15,6 +15,7 @@ import com.example.chefmate.database.entity.ShoppingEntity
 import com.example.chefmate.database.entity.ShoppingItemEntity
 import com.example.chefmate.database.entity.StepEntity
 import com.example.chefmate.database.entity.TagEntity
+import com.example.chefmate.database.entity.UserEntity
 
 @Database(
     entities = [
@@ -24,16 +25,15 @@ import com.example.chefmate.database.entity.TagEntity
         ShoppingItemEntity::class,
         StepEntity::class,
         TagEntity::class,
+        UserEntity::class,
     ],
     version = 1,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
-
     abstract fun recipeDao(): RecipeDao
     abstract fun ingredientDao(): IngredientDao
     abstract fun stepDao(): StepDao
     abstract fun shoppingDao(): ShoppingDao
     abstract fun tagDao(): TagDao
-
 }
